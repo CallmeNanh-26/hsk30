@@ -1,13 +1,13 @@
 /* Luyen tap voi AI (chi co khi mo bang link Claude): bai tap moi, hoi thoai, cham cau tu viet */
 'use strict';
 
-var AI = { fn: null, off: false, busy: false, chat: null };
+var AI = { fn: null, off: false, busy: false, chat: null, state: 'wait' };
 function initAI() {
   if (!window.claude || typeof claude.use !== 'function') return;
   claude.use('sample').then(function (f) {
-    AI.fn = f || null;
-    if (AI.fn && document.querySelector('#view-review.active') && !R.cur) VIEWS.review();
-  }).catch(function () { });
+    AI.fn = f || null; AI.state = f ? 'ok' : 'none';
+    if (document.querySelector('#view-review.active') && !R.cur) VIEWS.review();
+  }).catch(function () { AI.state = 'none'; });
 }
 function aiReady() { return !!AI.fn && !AI.off; }
 function aiErr(e) {
@@ -38,6 +38,10 @@ var CONTEXT = 'Người học là công nhân/nhân viên người Việt làm t
 // ---------- The tren tab On tap ----------
 var CLAUDE_URL = 'https://claude.ai/artifact/KRoXbf4SFPgmp4vqdJLBau';
 function aiCardHtml() {
+  var head = '<div class="card small"><b>✨ Luyện với AI</b><div class="muted" style="margin-top:4px">';
+  if (window.claude && AI.state === 'wait') return head + 'Đang kết nối Claude…</div></div>';
+  if (window.claude && (AI.state === 'none' || AI.off)) return head + 'Tài khoản đang mở trang chưa dùng được AI. Hãy kiểm tra: đã <b>đăng nhập claude.ai</b> chưa; khi trang hỏi “cho phép dùng Claude” thì chọn <b>Cho phép</b> (nếu lỡ từ chối, tải lại trang). Nếu vẫn không được, tài khoản này có thể không được Claude cho dùng AI trên trang được chia sẻ – báo giáo viên.</div></div>';
+  if (window.claude && !knownWords().length) return head + 'Hãy vào <b>Tra từ</b> và bấm ✓ ở các từ đã học (hoặc khôi phục mã sao lưu từ bản GitHub ở Cài đặt). AI sẽ soạn bài từ chính các từ đó.</div></div>';
   if (!knownWords().length) return '';
   if (!window.claude) return '<div class="card small"><b>✨ Luyện với AI</b><div class="muted" style="margin-top:4px">Bài tập AI, luyện hội thoại và chấm câu chỉ có khi mở app bằng link Claude (cần tài khoản claude.ai). Tiến độ ở đây không tự chuyển sang, hãy dùng mã sao lưu ở Cài đặt.</div>' +
     '<a class="btn" style="margin-top:8px" href="' + CLAUDE_URL + '" target="_blank" rel="noopener">Mở link Claude</a></div>';
