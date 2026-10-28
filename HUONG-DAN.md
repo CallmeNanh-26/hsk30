@@ -20,7 +20,7 @@ Danh sách từ theo **新版HSK考试大纲 (2025)**, đúng với file 词汇�
 - Mỗi từ đánh dấu ✓ (hoặc tự thêm) được hẹn ôn sau **20 phút → 1 giờ → 1 → 2 → 4 → 7 → 15 → 30 ngày**. "Nhớ rồi" lên mốc tiếp theo; "Chưa nhớ" lùi về mốc đầu (20 phút) hoặc 1 ngày. Qua mốc 30 ngày = đã thuộc.
 - Đánh dấu hàng loạt (từ đã học từ trước): lịch ôn được rải đều trong 7 ngày.
 - Đầu trang hiện băng 🔔 số từ đến hạn + nút *Ôn ngay*; tab Ôn tập có chấm đỏ. Trên máy tính có thể bật thông báo trình duyệt (Cài đặt).
-- Nút **📅 Thêm lịch ôn**: tải file .ics với 6 buổi ôn (1, 2, 4, 7, 15, 30 ngày) vào giờ chọn ở Cài đặt (mặc định 20:00). Mở file → lịch điện thoại tự nhắc kể cả khi đóng app.
+- **Google Calendar**: nút *📅 Đặt nhắc hằng ngày trên Google Calendar* (Cài đặt, hoặc băng nhắc sau khi học) mở sẵn một sự kiện lặp mỗi ngày vào giờ đã chọn (mặc định 20:00), bấm Lưu là xong – chỉ làm 1 lần. Sau đó nút *Ghi vào Google Calendar* ghi danh sách từ học hôm nay vào lịch ngày mai.
 - Tab Tiến độ có thẻ *Đường cong ghi nhớ*: số từ ở từng mốc và số từ quá hạn.
 - Khi sửa `app.js`, `app-hoc.js` hoặc `app-tu.js`, tăng số `HSK_VERSION` trong `data/danh-sach.js` để trình duyệt tải bản mới.
 

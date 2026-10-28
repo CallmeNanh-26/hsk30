@@ -1,11 +1,10 @@
-/* Nhac on theo duong cong lang quen Ebbinghaus: lich on, bang nhac, thong bao, file lich .ics */
+/* Nhac on theo duong cong lang quen Ebbinghaus: lich on, bang nhac, thong bao, Google Calendar */
 'use strict';
 
 var MIN = 60000, HOUR = 60 * MIN, DAY = 24 * HOUR;
 var STEPS = [20 * MIN, HOUR, DAY, 2 * DAY, 4 * DAY, 7 * DAY, 15 * DAY, 30 * DAY];
 var STEP_NAMES = ['20 phút', '1 giờ', '1 ngày', '2 ngày', '4 ngày', '7 ngày', '15 ngày', '30 ngày'];
 var MASTER = STEPS.length; // da qua moc 30 ngay
-var CAL_DAYS = [1, 2, 4, 7, 15, 30];
 
 // S.eb: {tu: [k, hanOn(ms)]} – k la moc vua dung de hen lan on tiep theo
 function firstStep() { return S.shortSteps === false ? 2 : 0; }
@@ -61,12 +60,12 @@ function renderRemind() {
       '</div><button class="btn primary" id="remindGo">Ôn ngay</button></div>';
     else { var nx = nextDue(); if (nx && nx.t - Date.now() < DAY) h += '<div class="remind soft">⏰ Lần ôn tiếp theo: <b>' + fmtTime(nx.t) + '</b> (' + nx.n + ' từ)</div>'; }
     var lt = Object.keys(S.known).filter(function (w) { return S.known[w] === today() && BYW[w]; }).length;
-    if (lt) h += '<div class="remind soft"><div class="grow">Hôm nay bạn học <b>' + lt + '</b> từ mới. Thêm lịch ôn để điện thoại nhắc cả khi đóng app.</div><button class="btn" id="calBtn">📅 Thêm lịch ôn</button></div>';
+    if (lt && !S.gcal) h += '<div class="remind soft"><div class="grow">Hôm nay bạn học <b>' + lt + '</b> từ mới. Đặt nhắc hằng ngày trên Google Calendar để điện thoại nhắc cả khi đóng app.</div>' + gcalLink(gcalDailyUrl(), '📅 Đặt nhắc') + '</div>';
+    else if (lt) h += '<div class="remind soft"><div class="grow">Hôm nay bạn học <b>' + lt + '</b> từ mới.</div>' + gcalLink(gcalTodayUrl(), '📅 Ghi vào Google Calendar') + '</div>';
   }
   if (el._h !== h) {
     el._h = h; el.innerHTML = h;
     if ($('remindGo')) $('remindGo').onclick = function () { R.lv = 'all'; show('review'); startCards(dueList().map(function (w) { return BYW[w]; })); };
-    if ($('calBtn')) $('calBtn').onclick = saveCalendar;
   }
   var tb = document.querySelector('#tabs [data-view="review"]');
   if (tb) {
@@ -95,38 +94,34 @@ function onLearned() {
   }, 900);
 }
 
-// ---------- File lich .ics: dien thoai tu nhac khi da dong app ----------
-function icsEsc(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
-function fold(line) {
-  var out = '', bytes = 0;
-  Array.from(line).forEach(function (ch) {
-    var b = unescape(encodeURIComponent(ch)).length;
-    if (bytes + b > 73) { out += '\r\n '; bytes = 1; }
-    out += ch; bytes += b;
-  });
-  return out;
+// ---------- Google Calendar: mo san su kien, hoc vien chi bam Luu ----------
+var APP_URL = 'https://callmenanh-26.github.io/hsk30/';
+function gTime(d) { return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T' + pad(d.getHours()) + pad(d.getMinutes()) + '00'; }
+function gcalUrl(title, start, details, daily) {
+  var p = 'action=TEMPLATE&text=' + encodeURIComponent(title) + '&dates=' + gTime(start) + '/' + gTime(new Date(start.getTime() + 15 * MIN)) +
+    '&details=' + encodeURIComponent(details);
+  try { p += '&ctz=' + encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch (e) { }
+  if (daily) p += '&recur=' + encodeURIComponent('RRULE:FREQ=DAILY');
+  return 'https://calendar.google.com/calendar/render?' + p;
 }
-function icsTime(d, utc) {
-  return utc ? d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + '00Z'
-    : d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T' + pad(d.getHours()) + pad(d.getMinutes()) + '00';
+function remindStart(addDays) {
+  var hm = (S.remindAt || '20:00').split(':'), n = new Date();
+  var d = new Date(n.getFullYear(), n.getMonth(), n.getDate() + (addDays || 0), +hm[0], +hm[1]);
+  if (!addDays && d < n) d.setDate(d.getDate() + 1);
+  return d;
 }
-function saveCalendar() {
+// Nhac hang ngay (cai 1 lan): Google Calendar nhac mo app, app tu tinh tu nao den han
+function gcalDailyUrl() {
+  return gcalUrl('🔔 Ôn từ vựng tiếng Trung', remindStart(0), 'Mở app để ôn các từ đến hạn theo đường cong lãng quên:\n' + APP_URL, true);
+}
+// Danh sach tu hoc hom nay, nhac on vao ngay mai
+function gcalTodayUrl() {
   var ws = Object.keys(S.known).filter(function (w) { return S.known[w] === today() && BYW[w]; });
-  if (!ws.length) return toast('Hôm nay chưa học từ mới nào.');
-  var hm = (S.remindAt || '20:00').split(':'), now = new Date(), id = Date.now();
-  var list = ws.slice(0, 40).map(function (w) { var o = BYW[w]; return o.w + ' ' + o.py + ' – ' + meaning(o); }).join('\n') + (ws.length > 40 ? '\n… và ' + (ws.length - 40) + ' từ khác' : '');
-  var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//HSK30//Nhac on tu vung//VI', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
-  CAL_DAYS.forEach(function (d, i) {
-    var st = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d, +hm[0], +hm[1]), en = new Date(st.getTime() + 15 * MIN);
-    L.push('BEGIN:VEVENT', 'UID:hsk30-' + id + '-' + i + '@doi-chieu-hsk', 'DTSTAMP:' + icsTime(now, true), 'DTSTART:' + icsTime(st), 'DTEND:' + icsTime(en),
-      'SUMMARY:' + icsEsc('Ôn ' + ws.length + ' từ tiếng Trung (lần ' + (i + 2) + ', sau ' + d + ' ngày)'),
-      'DESCRIPTION:' + icsEsc(list + '\n\nMở app Đối chiếu HSK → Ôn tập.'),
-      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEsc('Đến giờ ôn từ vựng'), 'TRIGGER:-PT0M', 'END:VALARM', 'END:VEVENT');
-  });
-  L.push('END:VCALENDAR');
-  var name = 'lich-on-' + now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + '.ics';
-  downloadFile(name, L.map(fold).join('\r\n') + '\r\n', 'text/calendar', 'Đã lưu file lịch. Mở file để thêm vào lịch điện thoại.');
+  var list = ws.slice(0, 30).map(function (w) { var o = BYW[w]; return o.w + ' ' + o.py + ' – ' + meaning(o); }).join('\n') + (ws.length > 30 ? '\n… và ' + (ws.length - 30) + ' từ khác' : '');
+  return gcalUrl('Ôn ' + ws.length + ' từ tiếng Trung', remindStart(1), list + '\n\nMở app → Ôn tập: ' + APP_URL, false);
 }
+function gcalLink(url, label, cls) { return '<a class="btn ' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener" data-gcal>' + label + '</a>'; }
+document.addEventListener('click', function (e) { if (e.target.closest('[data-gcal]')) { S.gcal = true; save(); setTimeout(renderRemind, 500); } });
 function downloadFile(name, text, type, okMsg) {
   okMsg = okMsg || 'Đã lưu file.';
   var blob = new Blob([text], { type: type + ';charset=utf-8' });
@@ -166,7 +161,9 @@ function curveHtml() {
 // ---------- Cai dat nhac on (tab Cai dat) ----------
 function remindSettingsHtml() {
   var h = '<div class="card"><b>🔔 Nhắc ôn theo đường cong lãng quên</b><div class="small muted" style="margin:4px 0 8px">Mỗi từ được nhắc ôn sau 20 phút, 1 giờ, 1, 2, 4, 7, 15 và 30 ngày kể từ lúc học.</div>' +
-    '<div class="row small">Giờ nhắc trong lịch điện thoại: <input type="time" id="remAt" value="' + esc(S.remindAt || '20:00') + '"></div>' +
+    '<div class="row small">Giờ nhắc hằng ngày: <input type="time" id="remAt" value="' + esc(S.remindAt || '20:00') + '"></div>' +
+    '<div class="row small" style="margin-top:8px"><span id="gcalWrap">' + gcalLink(gcalDailyUrl(), '📅 Đặt nhắc hằng ngày trên Google Calendar', 'primary') + '</span>' +
+    '<span class="muted">Bấm Lưu trong Google Calendar là xong, chỉ cần làm 1 lần.' + (S.gcal ? ' (Bạn đã đặt nhắc.)' : '') + '</span></div>' +
     '<label class="row small" style="margin-top:8px"><input type="checkbox" id="remShort"' + (S.shortSteps === false ? '' : ' checked') + '> Nhắc ôn sớm sau 20 phút và 1 giờ</label>';
   if ('Notification' in window) {
     var p = Notification.permission;
@@ -177,7 +174,7 @@ function remindSettingsHtml() {
   return h + '</div>';
 }
 function bindRemindSettings() {
-  $('remAt').onchange = function () { S.remindAt = this.value || '20:00'; save(); toast('Đã lưu giờ nhắc.'); };
+  $('remAt').onchange = function () { S.remindAt = this.value || '20:00'; save(); $('gcalWrap').innerHTML = gcalLink(gcalDailyUrl(), '📅 Đặt nhắc hằng ngày trên Google Calendar', 'primary'); toast('Đã lưu giờ nhắc.'); };
   $('remShort').onchange = function () { S.shortSteps = this.checked; save(); };
   if ($('remNotify')) $('remNotify').onclick = function () {
     if (S.notify) { S.notify = false; save(); VIEWS.more(); return; }
