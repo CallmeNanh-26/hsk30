@@ -67,15 +67,13 @@
 
 <script src="data/danh-sach.js"></script>
 <script>
-  // Nap lan luot cac file du lieu, file nao thieu thi bo qua
-  (function load(i) {
-    var files = (window.HSK_FILES || []).concat(['app.js', 'app-tu.js', 'app-nhac.js', 'app-ai.js', 'app-hoc.js']);
-    if (i >= files.length) return;
+  // Tai song song cac file du lieu nhung chay dung thu tu (async=false); file nao thieu thi bo qua
+  (window.HSK_FILES || []).concat(['app.js', 'app-tu.js', 'app-nhac.js', 'app-ai.js', 'app-hoc.js']).forEach(function (f) {
     var el = document.createElement('script');
-    el.src = files[i] + '?v=' + (window.HSK_VERSION || '1');
-    el.onload = el.onerror = function () { load(i + 1); };
+    el.src = f + '?v=' + (window.HSK_VERSION || '1');
+    el.async = false;
     document.body.appendChild(el);
-  })(0);
+  });
 </script>
 </body>
 </html>

@@ -26,13 +26,15 @@ var GEM = 'https://generativelanguage.googleapis.com/v1beta/';
 function gemFetch(path, body) {
   var key = getKey();
   return fetch(GEM + path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: body ? JSON.stringify(body) : undefined })
-    .catch(function () { throw { code: 'upstream_error' }; })
+    .catch(function (e) { throw { code: 'upstream_error', message: 'network: ' + (e && e.message || '') }; })
     .then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (d) {
         if (r.ok) return d;
-        if (r.status === 429) throw { code: 'rate_limited' };
-        if (r.status === 400 || r.status === 401 || r.status === 403) throw { code: 'bad_key', message: (d.error && d.error.message) || '' };
-        throw { code: 'upstream_error' };
+        var msg = 'HTTP ' + r.status + ((d.error && (d.error.status || d.error.message)) ? ' – ' + (d.error.status || '') + ' ' + (d.error.message || '') : '');
+        if (r.status === 429) throw { code: 'rate_limited', message: msg };
+        if (/API key not valid|API_KEY_INVALID/i.test(msg)) throw { code: 'bad_key', message: msg };
+        if (r.status === 400 || r.status === 401 || r.status === 403) throw { code: 'key_refused', message: msg };
+        throw { code: 'upstream_error', message: msg };
       });
     });
 }
@@ -84,6 +86,7 @@ function testKey(k, done) {
 
 function aiErr(e) {
   var c = e && e.code;
+  if (c === 'key_refused') return 'Google từ chối khóa AI (' + ((e.message || '').slice(0, 120)) + '). Vào Cài đặt → Khóa AI để kiểm tra lại.';
   if (c === 'bad_key') return 'Khóa AI không dùng được (sai khóa hoặc đã bị xóa). Vào Cài đặt → Khóa AI để kiểm tra lại.';
   if (c === 'not_granted' || c === 'sampling_disabled' || c === 'not_declared' || c === 'capability_disabled' || c === 'capability_removed') {
     if (getKey()) { AI.fn = geminiFn; AI.via = 'gemini'; } else AI.off = true;
@@ -175,8 +178,15 @@ function keyGuide() {
       if (ok) { $('keyMsg').textContent = '✅ Khóa dùng được! Vào Ôn tập → Luyện với AI.'; AI.off = false; initAI(); toast('Đã lưu khóa AI.'); }
       else if (e && e.code === 'rate_limited') { $('keyMsg').textContent = '✅ Khóa đúng, nhưng đang hết lượt miễn phí. Đợi 1–2 phút rồi dùng.'; AI.off = false; initAI(); }
       else if (e && e.code === 'bad_key') { setKey(''); $('keyMsg').textContent = '❌ Khóa không đúng. Kiểm tra đã copy đủ dãy AIza… chưa (không thừa dấu cách).'; }
+      else if (e && e.code === 'key_refused') {
+        setKey('');
+        var m = e.message || '', why = /location|region|country/i.test(m) ? 'Google chưa cho dùng Gemini API ở khu vực/mạng này (thử tắt VPN hoặc dùng mạng khác).' :
+          /SERVICE_DISABLED|has not been used|disabled/i.test(m) ? 'Dự án của khóa chưa bật Gemini API. Vào lại aistudio.google.com/app/apikey, tạo khóa mới bằng nút “Create API key in new project”.' :
+          /PERMISSION_DENIED|referer|restrict/i.test(m) ? 'Khóa đang bị giới hạn (chỉ cho một số trang web/ứng dụng). Tạo khóa mới không đặt giới hạn.' : 'Google từ chối khóa này.';
+        $('keyMsg').innerHTML = '❌ ' + esc(why) + '<div class="muted" style="margin-top:4px">Chi tiết từ Google (gửi giáo viên nếu cần): <code>' + esc(m.slice(0, 300)) + '</code></div>';
+      }
       else if (window.claude) { setKey(''); $('keyMsg').innerHTML = '❌ Trang trong Claude chặn kết nối tới Google nên khóa Gemini không dùng được ở đây. Hãy mở app bằng <b>link GitHub</b> rồi dán khóa ở đó (tiến độ chuyển bằng mã sao lưu ở Cài đặt).<div style="margin-top:6px"><a class="btn primary" href="' + APP_URL + '" target="_blank" rel="noopener">Mở link GitHub ↗</a></div>'; }
-      else { setKey(''); $('keyMsg').textContent = '❌ Chưa kết nối được tới Google. Kiểm tra mạng (một số mạng công ty chặn Google AI) rồi thử lại.'; }
+      else { setKey(''); $('keyMsg').innerHTML = '❌ Chưa kết nối được tới Google. Kiểm tra mạng (một số mạng công ty/wifi xưởng chặn Google AI; thử 4G) rồi thử lại.<div class="muted" style="margin-top:4px">Chi tiết: <code>' + esc(((e && e.message) || '').slice(0, 300)) + '</code></div>'; }
     });
   };
   if ($('keyDel')) $('keyDel').onclick = function () { setKey(''); try { localStorage.removeItem('hsk30.aimodel'); } catch (e) { } initAI(); closeSheet(); toast('Đã xóa khóa AI trên máy này.'); };
