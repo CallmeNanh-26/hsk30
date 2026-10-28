@@ -273,6 +273,6 @@ function boot() {
     var tab = 'search'; try { tab = localStorage.getItem('hsk30.tab') || 'search'; } catch (e) { }
     if (tab === 'duyet') tab = 'search';
     show(VIEWS[tab] || tab === 'search' ? tab : 'search');
-    startCloud();
+    startCloud(); initAI();
   });
 }

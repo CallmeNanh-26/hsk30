@@ -248,3 +248,14 @@ nav.tabs .badge { position: absolute; top: 3px; left: 50%; margin-left: 8px; min
 .cv-row .bar { margin: 0; }
 #remAt { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
 #pasteName { padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+
+/* Luyen voi AI */
+.ai-card { border-color: var(--brand); }
+.ai-spin { font-size: 44px; animation: aispin 1.6s linear infinite; display: inline-block; }
+@keyframes aispin { to { transform: rotate(360deg); } }
+.chat { display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto; padding: 4px 0 8px; }
+.msg { max-width: 88%; padding: 8px 12px; border-radius: 14px; font-size: 15px; line-height: 1.5; }
+.msg.bot { align-self: flex-start; background: var(--brand-soft); font-family: var(--zh), inherit; }
+.msg.me { align-self: flex-end; background: var(--brand); color: #fff; }
+.chat-in { position: sticky; bottom: 0; background: var(--card); padding-top: 8px; }
+#chatIn { padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); font-size: 16px; }

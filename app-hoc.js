@@ -117,7 +117,9 @@ VIEWS.review = function () {
     '<button class="btn block" id="startAll">Ôn tất cả ' + ks.length + ' thẻ</button>' +
     '<button class="btn block" id="startQuiz">✍️ Làm bài tập trắc nghiệm (10 câu)</button></div>';
   h += '</div><div class="small muted">Lịch ôn theo đường cong lãng quên Ebbinghaus: 20 phút → 1 giờ → 1 → 2 → 4 → 7 → 15 → 30 ngày. Thẻ “Nhớ rồi” lên mốc tiếp theo; thẻ “Chưa nhớ” được ôn lại ngay trong lượt và lùi về mốc đầu.</div>';
+  h += aiCardHtml();
   $('view-review').innerHTML = h;
+  bindAiCard();
   $('rFront').value = R.front;
   $('rLv').onchange = function () { R.lv = this.value; VIEWS.review(); };
   $('rFront').onchange = function () { R.front = this.value; };
@@ -236,7 +238,7 @@ function renderQ() {
 function answered(ok, q) {
   QZ.res[QZ.i] = ok;
   var extra = q.after ? '<div class="zh" style="margin-top:6px">' + esc(q.after) + ' <button class="mini-speak" data-say="' + esc(q.after) + '">🔊</button></div>' : '';
-  $('fb').innerHTML = '<div class="feedback ' + (ok ? 'good' : 'bad') + '">' + (ok ? '✓ Chính xác!' : '✗ Chưa đúng. Đáp án: <b class="zh">' + esc(q.a) + '</b>') + extra + '</div>' +
+  $('fb').innerHTML = '<div class="feedback ' + (ok ? 'good' : 'bad') + '">' + (ok ? '✓ Chính xác!' : '✗ Chưa đúng. Đáp án: <b class="zh">' + esc(q.a) + '</b>') + extra + (q.note ? '<div class="small" style="margin-top:6px;white-space:pre-line">💡 ' + esc(q.note) + '</div>' : '') + '</div>' +
     (q.tiles ? '' : '<button class="btn block primary" style="margin-top:10px" id="nextQ">Câu tiếp →</button>');
   if ($('nextQ')) $('nextQ').onclick = nextQ;
 }
@@ -250,7 +252,7 @@ function nextQ() {
   if (single) h += '<button class="btn block" data-open="' + esc(single) + '">Quay lại từ ' + esc(single) + '</button>';
   h += '</div>';
   openSheet(h);
-  $('redo').onclick = function () { startQuiz(QZ.mode === 'single' ? QZ.ws : shuffle(QZ.ws), QZ.mode); };
+  $('redo').onclick = function () { if (QZ.mode === 'ai') return aiQuiz(); startQuiz(QZ.mode === 'single' ? QZ.ws : shuffle(QZ.ws), QZ.mode); };
 }
 
 // ---------- Cai dat ----------

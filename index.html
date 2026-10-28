@@ -69,7 +69,7 @@
 <script>
   // Nap lan luot cac file du lieu, file nao thieu thi bo qua
   (function load(i) {
-    var files = (window.HSK_FILES || []).concat(['app.js', 'app-tu.js', 'app-nhac.js', 'app-hoc.js']);
+    var files = (window.HSK_FILES || []).concat(['app.js', 'app-tu.js', 'app-nhac.js', 'app-ai.js', 'app-hoc.js']);
     if (i >= files.length) return;
     var el = document.createElement('script');
     el.src = files[i] + '?v=' + (window.HSK_VERSION || '1');
