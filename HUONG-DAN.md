@@ -24,6 +24,13 @@ Danh sách từ theo **新版HSK考试大纲 (2025)**, đúng với file 词汇�
 - Tab Tiến độ có thẻ *Đường cong ghi nhớ*: số từ ở từng mốc và số từ quá hạn.
 - Khi sửa `app.js`, `app-hoc.js` hoặc `app-tu.js`, tăng số `HSK_VERSION` trong `data/danh-sach.js` để trình duyệt tải bản mới.
 
+## Luyện với AI (chỉ trên link Claude)
+Tab Ôn tập → thẻ *✨ Luyện với AI* (hiện khi đã có từ được đánh dấu):
+- **Bài tập AI**: 8 câu mới mỗi lần (chọn từ theo ngữ cảnh, chọn câu dịch đúng, chọn nghĩa, chọn câu dùng từ đúng, sắp xếp câu), từ chính các từ đã học, ưu tiên từ đến hạn ôn, có giải thích.
+- **Luyện hội thoại**: AI đóng vai tổ trưởng / khách hàng / đồng nghiệp / nhân viên kho, nói câu ngắn kèm pinyin và dịch, sửa lỗi câu học viên viết.
+- **Tự đặt câu – AI chấm**: chấm 1–5 sao, sửa câu, gợi ý câu tự nhiên hơn.
+- Dùng lượt Claude của chính học viên; lần đầu trang hỏi cho phép. Trên link GitHub phần này tự ẩn.
+
 ## Bổ sung từ vựng
 **Cách 1 – sửa file `data/bo-sung.js`** (mở bằng Notepad, lưu UTF-8). Mỗi dòng một từ:
 ```
