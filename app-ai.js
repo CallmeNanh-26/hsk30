@@ -1,22 +1,96 @@
-/* Luyen tap voi AI (chi co khi mo bang link Claude): bai tap moi, hoi thoai, cham cau tu viet */
+/* Luyen tap voi AI: bai tap moi, hoi thoai, cham cau tu viet.
+   Nguon AI: Claude (khi mo link Claude va tai khoan duoc phep) hoac khoa Gemini mien phi cua hoc vien.
+   Khong co AI: nut sao chep de de dan sang Claude/ChatGPT/Gemini ben ngoai. */
 'use strict';
 
-var AI = { fn: null, off: false, busy: false, chat: null, state: 'wait' };
+var AI = { fn: null, off: false, busy: false, chat: null, state: 'wait', via: '' };
+var KEY_STORE = 'hsk30.aikey'; // khoa Gemini: chi luu tren may hoc vien, khong nam trong ma sao luu
+function getKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch (e) { return ''; } }
+function setKey(k) { try { if (k) localStorage.setItem(KEY_STORE, k); else localStorage.removeItem(KEY_STORE); } catch (e) { } }
 function initAI() {
-  if (!window.claude || typeof claude.use !== 'function') return;
-  claude.use('sample').then(function (f) {
-    AI.fn = f || null; AI.state = f ? 'ok' : 'none';
+  var fallback = function () {
+    if (getKey()) { AI.fn = geminiFn; AI.via = 'gemini'; AI.state = 'ok'; } else { AI.fn = null; AI.via = ''; AI.state = 'none'; }
     if (document.querySelector('#view-review.active') && !R.cur) VIEWS.review();
-  }).catch(function () { AI.state = 'none'; });
+  };
+  if (!window.claude || typeof claude.use !== 'function') return fallback();
+  claude.use('sample').then(function (f) {
+    if (!f) return fallback();
+    AI.fn = f; AI.via = 'claude'; AI.state = 'ok';
+    if (document.querySelector('#view-review.active') && !R.cur) VIEWS.review();
+  }).catch(fallback);
 }
 function aiReady() { return !!AI.fn && !AI.off; }
+
+// ---------- Gemini (khoa cua hoc vien, goi thang tu trinh duyet) ----------
+var GEM = 'https://generativelanguage.googleapis.com/v1beta/';
+function gemFetch(path, body) {
+  var key = getKey();
+  return fetch(GEM + path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: body ? JSON.stringify(body) : undefined })
+    .catch(function () { throw { code: 'upstream_error' }; })
+    .then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (r.ok) return d;
+        if (r.status === 429) throw { code: 'rate_limited' };
+        if (r.status === 400 || r.status === 401 || r.status === 403) throw { code: 'bad_key', message: (d.error && d.error.message) || '' };
+        throw { code: 'upstream_error' };
+      });
+    });
+}
+// Chon model "flash" moi nhat ma khoa nay dung duoc (khong doan ten co dinh)
+function gemModel() {
+  try { var m = localStorage.getItem('hsk30.aimodel'); if (m) return Promise.resolve(m); } catch (e) { }
+  return gemFetch('models?pageSize=200').then(function (d) {
+    var ms = (d.models || []).filter(function (m) {
+      var n = m.name || '';
+      return (m.supportedGenerationMethods || []).indexOf('generateContent') >= 0 && /flash/.test(n) && !/(image|tts|audio|live|embed|vision|thinking)/.test(n);
+    });
+    var ver = function (n) { var x = n.match(/(\d+(?:\.\d+)?)/); return x ? +x[1] : 0; };
+    ms.sort(function (a, b) {
+      var pa = /(preview|exp)/.test(a.name) ? 1 : 0, pb = /(preview|exp)/.test(b.name) ? 1 : 0;
+      var la = /lite/.test(a.name) ? 1 : 0, lb = /lite/.test(b.name) ? 1 : 0;
+      return pa - pb || ver(b.name) - ver(a.name) || la - lb;
+    });
+    if (!ms.length) throw { code: 'bad_key', message: 'no model' };
+    var name = ms[0].name.replace(/^models\//, '');
+    try { localStorage.setItem('hsk30.aimodel', name); } catch (e) { }
+    return name;
+  });
+}
+function gemAsk(input, json) {
+  var turns = typeof input === 'string' ? [{ role: 'user', content: input }] : input;
+  var body = { contents: turns.map(function (t) { return { role: t.role === 'assistant' ? 'model' : 'user', parts: [{ text: t.content }] }; }) };
+  if (json) body.generationConfig = { responseMimeType: 'application/json' };
+  return gemModel().then(function (m) { return gemFetch('models/' + m + ':generateContent', body); }).then(function (d) {
+    var c = d.candidates && d.candidates[0];
+    var text = c && c.content && c.content.parts ? c.content.parts.map(function (p) { return p.text || ''; }).join('') : '';
+    if (!text) throw { code: (d.promptFeedback && d.promptFeedback.blockReason) ? 'refused' : 'empty_completion' };
+    return text;
+  });
+}
+// Cung cach goi voi Claude: fn(input, {onText}) -> {text}; fn.json(input) -> doi tuong
+function geminiFn(input, opts) {
+  return gemAsk(input, false).then(function (t) { if (opts && opts.onText) opts.onText({ text: t, delta: t }); return { text: t, truncated: false }; });
+}
+geminiFn.json = function (input) {
+  return gemAsk(input, true).then(function (t) {
+    var s = t.replace(/^```(?:json)?\s*|\s*```$/g, '');
+    try { return JSON.parse(s); } catch (e) { throw { code: 'invalid_json', text: t }; }
+  });
+};
+function testKey(k, done) {
+  setKey(k); try { localStorage.removeItem('hsk30.aimodel'); } catch (e) { }
+  gemAsk('Trả lời đúng một từ: OK', false).then(function () { done(true); }, function (e) { done(false, e); });
+}
+
 function aiErr(e) {
   var c = e && e.code;
+  if (c === 'bad_key') return 'Khóa AI không dùng được (sai khóa hoặc đã bị xóa). Vào Cài đặt → Khóa AI để kiểm tra lại.';
   if (c === 'not_granted' || c === 'sampling_disabled' || c === 'not_declared' || c === 'capability_disabled' || c === 'capability_removed') {
-    AI.off = true; if (document.querySelector('#view-review.active')) VIEWS.review();
-    return 'Bạn chưa cho phép trang dùng Claude nên phần AI tạm ẩn. Mở lại trang để bật.';
+    if (getKey()) { AI.fn = geminiFn; AI.via = 'gemini'; } else AI.off = true;
+    if (document.querySelector('#view-review.active')) VIEWS.review();
+    return getKey() ? 'Claude không cho dùng ở tài khoản này, app đã chuyển sang khóa Gemini của bạn. Bấm lại để thử.' : 'Tài khoản này chưa dùng được Claude. Hãy thêm khóa AI Gemini miễn phí (Cài đặt → Khóa AI).';
   }
-  if (c === 'rate_limited') return 'Đã dùng hết lượt Claude tạm thời. Hãy thử lại sau ít phút.';
+  if (c === 'rate_limited') return AI.via === 'gemini' ? 'Khóa Gemini miễn phí đã hết lượt trong phút/ngày này. Đợi 1–2 phút (hoặc sang ngày mai) rồi thử lại.' : 'Đã dùng hết lượt Claude tạm thời. Hãy thử lại sau ít phút.';
   if (c === 'session_expired') return 'Phiên đăng nhập Claude đã hết, hãy đăng nhập lại.';
   if (c === 'refused') return 'AI không trả lời được nội dung này, hãy thử cách khác.';
   if (c === 'invalid_json') return 'AI trả lời sai định dạng, bấm thử lại nhé.';
@@ -37,25 +111,75 @@ var CONTEXT = 'Người học là công nhân/nhân viên người Việt làm t
 
 // ---------- The tren tab On tap ----------
 var CLAUDE_URL = 'https://claude.ai/artifact/KRoXbf4SFPgmp4vqdJLBau';
+function copyBlock(open) {
+  return '<details class="ai-copy"' + (open ? ' open' : '') + '><summary><b>📋 Sao chép đề sang Claude / ChatGPT / Gemini</b></summary>' +
+    '<ol class="small steps-ol"><li>Bấm một nút <b>Sao chép đề</b> bên dưới (app ghi sẵn các từ bạn đang học).</li>' +
+    '<li>Bấm mở một trang AI (miễn phí, đăng nhập bằng Google/email).</li>' +
+    '<li>Nhấn giữ vào ô chat (điện thoại) hoặc Ctrl+V (máy tính) để <b>dán</b>, rồi bấm gửi.</li>' +
+    '<li>Làm bài ngay trong khung chat đó. Xong, quay lại app bấm ✓ / ôn thẻ như bình thường.</li></ol>' +
+    '<div style="display:grid;gap:6px"><button class="btn" data-cp="quiz">📋 Sao chép đề: Bài tập 8 câu</button><button class="btn" data-cp="chat">📋 Sao chép đề: Luyện hội thoại</button><button class="btn" data-cp="write">📋 Sao chép đề: Đặt câu và nhờ chấm</button></div>' +
+    '<div class="row" style="margin-top:8px"><a class="btn ghost" href="https://claude.ai/new" target="_blank" rel="noopener">Mở Claude</a><a class="btn ghost" href="https://chatgpt.com/" target="_blank" rel="noopener">Mở ChatGPT</a><a class="btn ghost" href="https://gemini.google.com/app" target="_blank" rel="noopener">Mở Gemini</a></div></details>';
+}
 function aiCardHtml() {
-  var head = '<div class="card small"><b>✨ Luyện với AI</b><div class="muted" style="margin-top:4px">';
-  if (window.claude && AI.state === 'wait') return head + 'Đang kết nối Claude…</div></div>';
-  if (window.claude && (AI.state === 'none' || AI.off)) return head + 'Tài khoản đang mở trang chưa dùng được AI. Hãy kiểm tra: đã <b>đăng nhập claude.ai</b> chưa; khi trang hỏi “cho phép dùng Claude” thì chọn <b>Cho phép</b> (nếu lỡ từ chối, tải lại trang). Nếu vẫn không được, tài khoản này có thể không được Claude cho dùng AI trên trang được chia sẻ – báo giáo viên.</div></div>';
-  if (window.claude && !knownWords().length) return head + 'Hãy vào <b>Tra từ</b> và bấm ✓ ở các từ đã học (hoặc khôi phục mã sao lưu từ bản GitHub ở Cài đặt). AI sẽ soạn bài từ chính các từ đó.</div></div>';
-  if (!knownWords().length) return '';
-  if (!window.claude) return '<div class="card small"><b>✨ Luyện với AI</b><div class="muted" style="margin-top:4px">Bài tập AI, luyện hội thoại và chấm câu chỉ có khi mở app bằng link Claude (cần tài khoản claude.ai). Tiến độ ở đây không tự chuyển sang, hãy dùng mã sao lưu ở Cài đặt.</div>' +
-    '<a class="btn" style="margin-top:8px" href="' + CLAUDE_URL + '" target="_blank" rel="noopener">Mở link Claude</a></div>';
-  if (!aiReady()) return '';
-  return '<div class="card ai-card"><b>✨ Luyện với AI</b><div class="small muted" style="margin:4px 0 10px">AI tạo bài mới mỗi lần từ chính các từ bạn đã học (ưu tiên từ đến hạn ôn). Dùng lượt Claude của tài khoản bạn.</div>' +
+  var head = '<div class="card ai-card"><b>✨ Luyện với AI</b>';
+  if (!knownWords().length) return head + '<div class="small muted" style="margin-top:4px">Hãy vào <b>Tra từ</b> và bấm ✓ ở các từ đã học (hoặc khôi phục mã sao lưu ở Cài đặt). AI sẽ soạn bài từ chính các từ đó.</div></div>';
+  if (AI.state === 'wait') return head + '<div class="small muted" style="margin-top:4px">Đang kết nối AI…</div></div>';
+  if (!aiReady()) return head + '<div class="small" style="margin:6px 0 10px">Để AI chạy ngay trong app, hãy thêm <b>khóa AI Gemini miễn phí</b> (làm 1 lần, khoảng 3 phút).</div>' +
+    '<button class="btn block primary" id="aiSetKey">🔑 Hướng dẫn lấy khóa AI miễn phí</button><div style="margin-top:10px">' + copyBlock(false) + '</div></div>';
+  return head + '<div class="small muted" style="margin:4px 0 10px">AI tạo bài mới mỗi lần từ chính các từ bạn đã học (ưu tiên từ đến hạn ôn). ' +
+    (AI.via === 'claude' ? 'Dùng lượt Claude của tài khoản bạn.' : 'Dùng khóa Gemini miễn phí của bạn.') + '</div>' +
     '<div style="display:grid;gap:8px"><button class="btn block primary" id="aiQuiz">✨ Bài tập AI (8 câu mới)</button>' +
     '<button class="btn block" id="aiChat">💬 Luyện hội thoại tiếng Trung</button>' +
-    '<button class="btn block" id="aiWrite">✍️ Tự đặt câu – AI chấm</button></div></div>';
+    '<button class="btn block" id="aiWrite">✍️ Tự đặt câu – AI chấm</button></div><div style="margin-top:10px">' + copyBlock(false) + '</div></div>';
 }
 function bindAiCard() {
+  if ($('aiSetKey')) $('aiSetKey').onclick = keyGuide;
   if (!$('aiQuiz')) return;
   $('aiQuiz').onclick = aiQuiz;
   $('aiChat').onclick = function () { chatSetup(); };
   $('aiWrite').onclick = function () { writeSetup(); };
+}
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('[data-cp]'); if (!b) return;
+  var ws = aiWords(10); if (!ws.length) return toast('Hãy đánh dấu vài từ đã học trước.');
+  copyText(copyPrompt(b.dataset.cp, ws));
+});
+// De de dan sang chat AI ben ngoai (hoi tung cau, cho tra loi)
+function copyPrompt(kind, ws) {
+  var base = 'Bạn là giáo viên tiếng Trung, trả lời và giải thích bằng tiếng Việt. ' + CONTEXT + '\nTrình độ của tôi: khoảng ' + lvHint(ws) + '.\nCác từ tôi đang học:\n' + wordList(ws) + '\n\n';
+  if (kind === 'quiz') return base + 'Hãy cho tôi làm bài tập 8 câu với các từ trên, HỎI TỪNG CÂU MỘT và chờ tôi trả lời rồi mới chấm. Trộn các dạng: chọn từ điền vào chỗ trống (A/B/C/D), chọn câu dịch đúng, chọn nghĩa đúng, sắp xếp từ thành câu, dịch câu ngắn Việt → Trung. Sau mỗi câu: báo đúng/sai, giải thích ngắn, cho câu mẫu kèm pinyin. Hết 8 câu thì tổng kết số câu đúng và từ tôi cần ôn thêm. Bắt đầu câu 1.';
+  if (kind === 'chat') return base + 'Hãy đóng vai tổ trưởng ở xưởng (hoặc khách hàng nếu tôi yêu cầu) và luyện hội thoại với tôi, cố gắng dùng các từ trên. Mỗi lượt: (1) nếu câu tôi viết sai thì sửa và giải thích ngắn; (2) nói 1–2 câu tiếng Trung ngắn, kèm pinyin và dịch tiếng Việt; (3) hỏi tôi một câu để tôi trả lời tiếp. Nếu tôi trả lời bằng tiếng Việt, hãy gợi ý cách nói bằng tiếng Trung. Bắt đầu nhé.';
+  return base + 'Tôi sẽ lần lượt đặt câu tiếng Trung với từng từ trên. Mỗi câu tôi gửi, hãy chấm 1–5 sao, chỉ ra lỗi, viết lại câu đúng kèm pinyin và nghĩa, và gợi ý một câu tự nhiên hơn. Bây giờ hãy nhắc tôi từ đầu tiên cần đặt câu.';
+}
+
+// ---------- Huong dan lay khoa Gemini mien phi ----------
+function keyGuide() {
+  var has = !!getKey();
+  openSheet('<h3 style="margin-top:4px">🔑 Lấy khóa AI Gemini miễn phí</h3>' +
+    '<div class="small muted" style="margin-bottom:8px">Làm 1 lần, khoảng 3 phút. Miễn phí, không cần thẻ ngân hàng. Khóa chỉ lưu trên máy này.</div>' +
+    '<ol class="steps-ol"><li><b>Mở trang lấy khóa:</b> bấm nút dưới đây (trang Google AI Studio).<div style="margin:6px 0"><a class="btn primary" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Mở Google AI Studio ↗</a></div></li>' +
+    '<li><b>Đăng nhập</b> bằng tài khoản Google (Gmail) của bạn. Nếu hiện hộp điều khoản, tích đồng ý rồi bấm <b>Continue / Tiếp tục</b>.</li>' +
+    '<li>Bấm nút <b>“Create API key”</b> (Tạo khóa API). Nếu được hỏi chọn dự án, chọn dự án có sẵn hoặc bấm tạo dự án mới.</li>' +
+    '<li>Một dãy ký tự dài bắt đầu bằng <code>AIza…</code> hiện ra. Bấm <b>Copy</b> (biểu tượng 2 ô vuông) để sao chép.</li>' +
+    '<li>Quay lại app này, <b>dán khóa</b> vào ô dưới đây rồi bấm <b>Lưu và kiểm tra</b>.</li></ol>' +
+    '<input id="keyIn" type="password" class="key-in" placeholder="Dán khóa AIza… vào đây" autocomplete="off">' +
+    '<div class="row" style="margin-top:8px"><button class="btn primary grow" id="keySave">Lưu và kiểm tra</button>' + (has ? '<button class="btn" id="keyDel">Xóa khóa</button>' : '') + '</div><div id="keyMsg" class="small" style="margin-top:8px">' + (has ? '✅ Máy này đã có khóa AI.' : '') + '</div>' +
+    '<details class="small" style="margin-top:10px"><summary>Lưu ý an toàn</summary><ul><li>Không gửi khóa cho người khác; ai có khóa sẽ dùng được lượt miễn phí của bạn.</li><li>Bản miễn phí có giới hạn lượt mỗi phút/ngày; hết lượt thì đợi một lúc.</li><li>Google có thể dùng nội dung gửi qua bản miễn phí để cải thiện AI – đừng gõ thông tin cá nhân.</li><li>Muốn ngừng dùng: bấm Xóa khóa ở đây, hoặc xóa khóa trong Google AI Studio.</li></ul></details>');
+  $('keySave').onclick = function () {
+    var k = $('keyIn').value.trim(); if (!k) return toast('Hãy dán khóa vào ô.');
+    var btn = this; btn.disabled = true; $('keyMsg').textContent = '⏳ Đang kiểm tra khóa…';
+    testKey(k, function (ok, e) {
+      btn.disabled = false;
+      if (ok) { $('keyMsg').textContent = '✅ Khóa dùng được! Vào Ôn tập → Luyện với AI.'; AI.off = false; initAI(); toast('Đã lưu khóa AI.'); }
+      else { setKey(''); $('keyMsg').textContent = '❌ ' + (e && e.code === 'rate_limited' ? 'Khóa đúng nhưng đang hết lượt, thử lại sau 1 phút.' : e && e.code === 'bad_key' ? 'Khóa không đúng. Kiểm tra đã copy đủ dãy AIza… chưa.' : 'Chưa kết nối được, kiểm tra mạng rồi thử lại.'); }
+    });
+  };
+  if ($('keyDel')) $('keyDel').onclick = function () { setKey(''); try { localStorage.removeItem('hsk30.aimodel'); } catch (e) { } initAI(); closeSheet(); toast('Đã xóa khóa AI trên máy này.'); };
+}
+function aiSettingsHtml() {
+  return '<div class="card"><b>🔑 Khóa AI (Gemini miễn phí)</b><div class="small muted" style="margin:4px 0 8px">' +
+    (getKey() ? '✅ Máy này đã có khóa – AI chạy ngay trong tab Ôn tập.' : 'Thêm khóa để dùng Bài tập AI, Luyện hội thoại và Chấm câu ngay trong app, kể cả khi không có tài khoản Claude.') +
+    '</div><button class="btn" id="keyOpen">' + (getKey() ? 'Xem / đổi khóa' : '🔑 Hướng dẫn lấy khóa miễn phí') + '</button></div>';
 }
 function aiLoading(msg) { openSheet('<div class="word-head"><div class="ai-spin">✨</div><div class="big-msg">' + esc(msg) + '</div><div class="small muted">Thường mất 10–30 giây.</div></div>'); }
 function aiFail(msg, retry) {

@@ -29,7 +29,9 @@ Tab Ôn tập → thẻ *✨ Luyện với AI* (hiện khi đã có từ đượ
 - **Bài tập AI**: 8 câu mới mỗi lần (chọn từ theo ngữ cảnh, chọn câu dịch đúng, chọn nghĩa, chọn câu dùng từ đúng, sắp xếp câu), từ chính các từ đã học, ưu tiên từ đến hạn ôn, có giải thích.
 - **Luyện hội thoại**: AI đóng vai tổ trưởng / khách hàng / đồng nghiệp / nhân viên kho, nói câu ngắn kèm pinyin và dịch, sửa lỗi câu học viên viết.
 - **Tự đặt câu – AI chấm**: chấm 1–5 sao, sửa câu, gợi ý câu tự nhiên hơn.
-- Dùng lượt Claude của chính học viên; lần đầu trang hỏi cho phép. Trên link GitHub phần này tự ẩn.
+- Nguồn AI, app tự chọn: (1) **Claude** – khi mở link Claude và tài khoản được Claude cho phép (thường chỉ chủ app); (2) **khóa Gemini miễn phí của học viên** – chạy trên cả link GitHub và link Claude.
+- **Học viên lấy khóa Gemini (1 lần, ~3 phút)**: Ôn tập → *🔑 Hướng dẫn lấy khóa AI miễn phí* (hoặc Cài đặt → Khóa AI) → mở aistudio.google.com/app/apikey → đăng nhập Gmail → *Create API key* → Copy dãy `AIza…` → dán vào app → *Lưu và kiểm tra*. Khóa chỉ lưu trên máy đó, không nằm trong mã sao lưu.
+- **Không muốn tạo khóa**: mục *📋 Sao chép đề sang Claude / ChatGPT / Gemini* – sao chép đề có sẵn từ đang học, dán vào trang AI bên ngoài và làm bài trong khung chat.
 
 ## Bổ sung từ vựng
 **Cách 1 – sửa file `data/bo-sung.js`** (mở bằng Notepad, lưu UTF-8). Mỗi dòng một từ:

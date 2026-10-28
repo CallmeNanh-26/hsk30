@@ -258,7 +258,7 @@ function nextQ() {
 // ---------- Cai dat ----------
 VIEWS.more = function () {
   var h = '<div class="card"><b>Tên học viên</b><div class="row" style="margin-top:6px"><input id="stName" class="grow" style="padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--card)" placeholder="Nhập tên của bạn" value="' + esc(S.name) + '"><button class="btn" id="saveName">Lưu</button></div></div>';
-  h += remindSettingsHtml();
+  h += remindSettingsHtml() + aiSettingsHtml();
   h += '<div class="card"><b>Sao lưu & chuyển máy</b><div class="small muted" style="margin:4px 0 8px">Tiến độ, từ của tôi và ghi chú được lưu ngay trên trình duyệt của máy này. Muốn dùng trên máy khác (điện thoại ↔ máy tính), hãy sao lưu rồi khôi phục ở máy kia.</div>' +
     '<div class="row"><button class="btn primary" id="exportCode">📋 Sao chép mã sao lưu</button><button class="btn" id="exportFile">⬇️ Tải file sao lưu</button></div>' +
     '<div style="margin-top:10px"><textarea id="importBox" placeholder="Dán mã sao lưu vào đây…"></textarea><div class="row" style="margin-top:6px"><button class="btn primary" id="importBtn">Khôi phục từ mã</button><label class="btn">Chọn file sao lưu<input type="file" id="importFile" accept=".json,.txt" hidden></label></div></div></div>';
@@ -273,7 +273,7 @@ VIEWS.more = function () {
   $('view-more').innerHTML = h;
   $('saveName').onclick = function () { S.name = $('stName').value.trim(); save(); updateSub(); toast('Đã lưu tên.'); };
   $('exportFile').onclick = function () { downloadFile('hsk-tien-do-' + (S.name || 'hoc-vien').replace(/\s+/g, '-') + '.json', JSON.stringify(S), 'application/json'); };
-  bindRemindSettings();
+  bindRemindSettings(); $('keyOpen').onclick = keyGuide;
   $('exportCode').onclick = function () { copyText(btoa(unescape(encodeURIComponent(JSON.stringify(S))))); };
   $('importBtn').onclick = function () { importData($('importBox').value.trim()); };
   $('importFile').onchange = function () { var f = this.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { importData(r.result); }; r.readAsText(f); };
