@@ -36,8 +36,12 @@ function lvHint(ws) {
 var CONTEXT = 'Người học là công nhân/nhân viên người Việt làm trong nhà máy và công ty thương mại của Trung Quốc. Ưu tiên tình huống ở xưởng, kho, giao hàng, gặp khách hàng.';
 
 // ---------- The tren tab On tap ----------
+var CLAUDE_URL = 'https://claude.ai/artifact/KRoXbf4SFPgmp4vqdJLBau';
 function aiCardHtml() {
-  if (!aiReady() || !knownWords().length) return '';
+  if (!knownWords().length) return '';
+  if (!window.claude) return '<div class="card small"><b>✨ Luyện với AI</b><div class="muted" style="margin-top:4px">Bài tập AI, luyện hội thoại và chấm câu chỉ có khi mở app bằng link Claude (cần tài khoản claude.ai). Tiến độ ở đây không tự chuyển sang, hãy dùng mã sao lưu ở Cài đặt.</div>' +
+    '<a class="btn" style="margin-top:8px" href="' + CLAUDE_URL + '" target="_blank" rel="noopener">Mở link Claude</a></div>';
+  if (!aiReady()) return '';
   return '<div class="card ai-card"><b>✨ Luyện với AI</b><div class="small muted" style="margin:4px 0 10px">AI tạo bài mới mỗi lần từ chính các từ bạn đã học (ưu tiên từ đến hạn ôn). Dùng lượt Claude của tài khoản bạn.</div>' +
     '<div style="display:grid;gap:8px"><button class="btn block primary" id="aiQuiz">✨ Bài tập AI (8 câu mới)</button>' +
     '<button class="btn block" id="aiChat">💬 Luyện hội thoại tiếng Trung</button>' +

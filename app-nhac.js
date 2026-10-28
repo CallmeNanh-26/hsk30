@@ -58,10 +58,9 @@ function renderRemind() {
     if (due.length) h += '<div class="remind"><div class="grow">🔔 <b>' + due.length + ' từ</b> đến hạn ôn' +
       (fresh ? ' <span class="small">(' + fresh + ' từ vừa học' + (due.length - fresh ? ', ' + (due.length - fresh) + ' từ cũ' : '') + ')</span>' : '') +
       '</div><button class="btn primary" id="remindGo">Ôn ngay</button></div>';
-    else { var nx = nextDue(); if (nx && nx.t - Date.now() < DAY) h += '<div class="remind soft">⏰ Lần ôn tiếp theo: <b>' + fmtTime(nx.t) + '</b> (' + nx.n + ' từ)</div>'; }
+    else { var nx = nextDue(); if (nx) h += '<div class="remind soft"><div class="grow">⏰ Lần ôn tiếp theo: <b>' + fmtTime(nx.t) + '</b> (' + nx.n + ' từ)</div>' + gcalLink(gcalNextUrl(nx), '📅 Nhắc lúc ' + fmtTime(nx.t).slice(0, 5)) + '</div>'; }
     var lt = Object.keys(S.known).filter(function (w) { return S.known[w] === today() && BYW[w]; }).length;
-    if (lt && !S.gcal) h += '<div class="remind soft"><div class="grow">Hôm nay bạn học <b>' + lt + '</b> từ mới. Đặt nhắc hằng ngày trên Google Calendar để điện thoại nhắc cả khi đóng app.</div>' + gcalLink(gcalDailyUrl(), '📅 Đặt nhắc') + '</div>';
-    else if (lt) h += '<div class="remind soft"><div class="grow">Hôm nay bạn học <b>' + lt + '</b> từ mới.</div>' + gcalLink(gcalTodayUrl(), '📅 Ghi vào Google Calendar') + '</div>';
+    if (lt && !S.gcal) h += '<div class="remind soft"><div class="grow">Hôm nay bạn học <b>' + lt + '</b> từ mới. Đặt nhắc hằng ngày trên Google Calendar để điện thoại nhắc cả khi đóng app.</div>' + gcalLink(gcalDailyUrl(), '📅 Đặt nhắc hằng ngày') + '</div>';
   }
   if (el._h !== h) {
     el._h = h; el.innerHTML = h;
@@ -114,11 +113,11 @@ function remindStart(addDays) {
 function gcalDailyUrl() {
   return gcalUrl('🔔 Ôn từ vựng tiếng Trung', remindStart(0), 'Mở app để ôn các từ đến hạn theo đường cong lãng quên:\n' + APP_URL, true);
 }
-// Danh sach tu hoc hom nay, nhac on vao ngay mai
-function gcalTodayUrl() {
-  var ws = Object.keys(S.known).filter(function (w) { return S.known[w] === today() && BYW[w]; });
+// Su kien dung vao gio on that su tiep theo (theo lich Ebbinghaus cua hoc vien), kem cac tu den han luc do
+function gcalNextUrl(nx) {
+  var ws = Object.keys(S.known).filter(function (w) { return BYW[w] && !ebDue(w) && S.eb[w][1] - nx.t < 10 * MIN; });
   var list = ws.slice(0, 30).map(function (w) { var o = BYW[w]; return o.w + ' ' + o.py + ' – ' + meaning(o); }).join('\n') + (ws.length > 30 ? '\n… và ' + (ws.length - 30) + ' từ khác' : '');
-  return gcalUrl('Ôn ' + ws.length + ' từ tiếng Trung', remindStart(1), list + '\n\nMở app → Ôn tập: ' + APP_URL, false);
+  return gcalUrl('Ôn ' + ws.length + ' từ tiếng Trung', new Date(nx.t), list + '\n\nMở app → Ôn tập: ' + APP_URL, false);
 }
 function gcalLink(url, label, cls) { return '<a class="btn ' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener" data-gcal>' + label + '</a>'; }
 document.addEventListener('click', function (e) { if (e.target.closest('[data-gcal]')) { S.gcal = true; save(); setTimeout(renderRemind, 500); } });
