@@ -124,6 +124,8 @@ function aiCardHtml() {
   var head = '<div class="card ai-card"><b>✨ Luyện với AI</b>';
   if (!knownWords().length) return head + '<div class="small muted" style="margin-top:4px">Hãy vào <b>Tra từ</b> và bấm ✓ ở các từ đã học (hoặc khôi phục mã sao lưu ở Cài đặt). AI sẽ soạn bài từ chính các từ đó.</div></div>';
   if (AI.state === 'wait') return head + '<div class="small muted" style="margin-top:4px">Đang kết nối AI…</div></div>';
+  if (!aiReady() && window.claude) return head + '<div class="small" style="margin:6px 0 10px">Tài khoản này chưa dùng được AI trong trang Claude. Để AI chạy ngay trong app, hãy mở <b>link GitHub</b> và thêm khóa AI Gemini miễn phí ở đó (tiến độ chuyển bằng mã sao lưu ở Cài đặt).</div>' +
+    '<a class="btn block primary" href="' + APP_URL + '" target="_blank" rel="noopener">Mở link GitHub ↗</a><div style="margin-top:10px">' + copyBlock(false) + '</div></div>';
   if (!aiReady()) return head + '<div class="small" style="margin:6px 0 10px">Để AI chạy ngay trong app, hãy thêm <b>khóa AI Gemini miễn phí</b> (làm 1 lần, khoảng 3 phút).</div>' +
     '<button class="btn block primary" id="aiSetKey">🔑 Hướng dẫn lấy khóa AI miễn phí</button><div style="margin-top:10px">' + copyBlock(false) + '</div></div>';
   return head + '<div class="small muted" style="margin:4px 0 10px">AI tạo bài mới mỗi lần từ chính các từ bạn đã học (ưu tiên từ đến hạn ôn). ' +
@@ -171,7 +173,10 @@ function keyGuide() {
     testKey(k, function (ok, e) {
       btn.disabled = false;
       if (ok) { $('keyMsg').textContent = '✅ Khóa dùng được! Vào Ôn tập → Luyện với AI.'; AI.off = false; initAI(); toast('Đã lưu khóa AI.'); }
-      else { setKey(''); $('keyMsg').textContent = '❌ ' + (e && e.code === 'rate_limited' ? 'Khóa đúng nhưng đang hết lượt, thử lại sau 1 phút.' : e && e.code === 'bad_key' ? 'Khóa không đúng. Kiểm tra đã copy đủ dãy AIza… chưa.' : 'Chưa kết nối được, kiểm tra mạng rồi thử lại.'); }
+      else if (e && e.code === 'rate_limited') { $('keyMsg').textContent = '✅ Khóa đúng, nhưng đang hết lượt miễn phí. Đợi 1–2 phút rồi dùng.'; AI.off = false; initAI(); }
+      else if (e && e.code === 'bad_key') { setKey(''); $('keyMsg').textContent = '❌ Khóa không đúng. Kiểm tra đã copy đủ dãy AIza… chưa (không thừa dấu cách).'; }
+      else if (window.claude) { setKey(''); $('keyMsg').innerHTML = '❌ Trang trong Claude chặn kết nối tới Google nên khóa Gemini không dùng được ở đây. Hãy mở app bằng <b>link GitHub</b> rồi dán khóa ở đó (tiến độ chuyển bằng mã sao lưu ở Cài đặt).<div style="margin-top:6px"><a class="btn primary" href="' + APP_URL + '" target="_blank" rel="noopener">Mở link GitHub ↗</a></div>'; }
+      else { setKey(''); $('keyMsg').textContent = '❌ Chưa kết nối được tới Google. Kiểm tra mạng (một số mạng công ty chặn Google AI) rồi thử lại.'; }
     });
   };
   if ($('keyDel')) $('keyDel').onclick = function () { setKey(''); try { localStorage.removeItem('hsk30.aimodel'); } catch (e) { } initAI(); closeSheet(); toast('Đã xóa khóa AI trên máy này.'); };
