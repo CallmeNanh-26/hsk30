@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đối chiếu HSK 3.0</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Tự đánh dấu từ vựng đã học, đối chiếu với HSK 3.0 cấp 1-6, ôn flashcard và làm bài tập.">
+<meta name="theme-color" content="#c8352e">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <h1><span class="logo">汉</span> Đối chiếu HSK 3.0</h1>
+  <div class="sub" id="subline">Đang tải dữ liệu…</div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-view="search" class="active"><span class="ic">🔍</span>Tra từ</button>
+  <button data-view="progress"><span class="ic">📊</span>Tiến độ</button>
+  <button data-view="review"><span class="ic">🃏</span>Ôn tập</button>
+  <button data-view="mine"><span class="ic">✏️</span>Từ của tôi</button>
+  <button data-view="duyet" id="tabDuyet" style="display:none"><span class="ic">✅</span>Duyệt từ</button>
+  <button data-view="more"><span class="ic">⚙️</span>Cài đặt</button>
+</nav>
+
+<main>
+  <div id="remind"></div>
+  <!-- TRA TU -->
+  <section class="view active" id="view-search">
+    <div class="search">
+      <input id="q" type="search" placeholder="Tìm chữ Hán, pinyin (vd: gongchang) hoặc nghĩa tiếng Việt" autocomplete="off">
+      <button class="clear" id="qclear" aria-label="Xóa">×</button>
+    </div>
+    <div class="chips" id="lvChips"></div>
+    <div class="chips" id="tagChips"></div>
+    <div class="chips" id="stChips"></div>
+    <div class="toolbar">
+      <span class="muted small" id="count"></span>
+      <span class="row">
+        <button class="btn" id="markAll">✓ Đánh dấu tất cả</button>
+        <button class="btn ghost" id="unmarkAll">Bỏ đánh dấu</button>
+      </span>
+    </div>
+    <div class="list" id="results"></div>
+    <div class="more" id="moreWrap"><button class="btn" id="moreBtn">Xem thêm</button></div>
+  </section>
+
+  <!-- TIEN DO -->
+  <section class="view" id="view-progress"></section>
+
+  <!-- ON TAP -->
+  <section class="view" id="view-review"></section>
+
+  <!-- TU CUA TOI -->
+  <section class="view" id="view-mine"></section>
+
+  <!-- DUYET TU (giao vien) -->
+  <section class="view" id="view-duyet"></section>
+
+  <!-- CAI DAT -->
+  <section class="view" id="view-more"></section>
+</main>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="data/danh-sach.js"></script>
+<script>
+  // Nap lan luot cac file du lieu, file nao thieu thi bo qua
+  (function load(i) {
+    var files = (window.HSK_FILES || []).concat(['app.js', 'app-tu.js', 'app-nhac.js', 'app-hoc.js']);
+    if (i >= files.length) return;
+    var el = document.createElement('script');
+    el.src = files[i] + '?v=' + (window.HSK_VERSION || '1');
+    el.onload = el.onerror = function () { load(i + 1); };
+    document.body.appendChild(el);
+  })(0);
+</script>
+</body>
+</html>
