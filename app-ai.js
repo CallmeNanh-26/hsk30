@@ -32,15 +32,17 @@ function gemFetch(path, body) {
         if (r.ok) return d;
         var msg = 'HTTP ' + r.status + ((d.error && (d.error.status || d.error.message)) ? ' – ' + (d.error.status || '') + ' ' + (d.error.message || '') : '');
         if (r.status === 429) throw { code: 'rate_limited', message: msg };
+        if (r.status === 503 || r.status === 500 || r.status === 404) throw { code: 'busy', message: msg };
         if (/API key not valid|API_KEY_INVALID/i.test(msg)) throw { code: 'bad_key', message: msg };
         if (r.status === 400 || r.status === 401 || r.status === 403) throw { code: 'key_refused', message: msg };
         throw { code: 'upstream_error', message: msg };
       });
     });
 }
-// Chon model "flash" moi nhat ma khoa nay dung duoc (khong doan ten co dinh)
-function gemModel() {
-  try { var m = localStorage.getItem('hsk30.aimodel'); if (m) return Promise.resolve(m); } catch (e) { }
+// Danh sach model "flash" khoa nay dung duoc, xep uu tien (khong doan ten co dinh); model vua chay tot dung truoc
+var GEM_LIST = null;
+function gemModels() {
+  if (GEM_LIST) return Promise.resolve(GEM_LIST);
   return gemFetch('models?pageSize=200').then(function (d) {
     var ms = (d.models || []).filter(function (m) {
       var n = m.name || '';
@@ -52,17 +54,31 @@ function gemModel() {
       var la = /lite/.test(a.name) ? 1 : 0, lb = /lite/.test(b.name) ? 1 : 0;
       return pa - pb || ver(b.name) - ver(a.name) || la - lb;
     });
-    if (!ms.length) throw { code: 'bad_key', message: 'no model' };
-    var name = ms[0].name.replace(/^models\//, '');
-    try { localStorage.setItem('hsk30.aimodel', name); } catch (e) { }
-    return name;
+    if (!ms.length) throw { code: 'key_refused', message: 'Không tìm thấy model Gemini nào cho khóa này' };
+    GEM_LIST = ms.map(function (m) { return m.name.replace(/^models\//, ''); });
+    var good = ''; try { good = localStorage.getItem('hsk30.aimodel') || ''; } catch (e) { }
+    if (GEM_LIST.indexOf(good) > 0) { GEM_LIST.splice(GEM_LIST.indexOf(good), 1); GEM_LIST.unshift(good); }
+    return GEM_LIST;
   });
 }
 function gemAsk(input, json) {
   var turns = typeof input === 'string' ? [{ role: 'user', content: input }] : input;
   var body = { contents: turns.map(function (t) { return { role: t.role === 'assistant' ? 'model' : 'user', parts: [{ text: t.content }] }; }) };
   if (json) body.generationConfig = { responseMimeType: 'application/json' };
-  return gemModel().then(function (m) { return gemFetch('models/' + m + ':generateContent', body); }).then(function (d) {
+  return gemModels().then(function (list) {
+    // Thu lan luot toi da 4 model: model qua tai (503) hoac het luot (429) thi chuyen model khac
+    var tryAt = function (i, lastErr) {
+      if (i >= Math.min(list.length, 4)) throw lastErr;
+      return gemFetch('models/' + list[i] + ':generateContent', body).then(function (d) {
+        try { localStorage.setItem('hsk30.aimodel', list[i]); } catch (e) { }
+        return d;
+      }, function (e) {
+        if (e && (e.code === 'busy' || e.code === 'rate_limited')) return tryAt(i + 1, e);
+        throw e;
+      });
+    };
+    return tryAt(0, { code: 'busy' });
+  }).then(function (d) {
     var c = d.candidates && d.candidates[0];
     var text = c && c.content && c.content.parts ? c.content.parts.map(function (p) { return p.text || ''; }).join('') : '';
     if (!text) throw { code: (d.promptFeedback && d.promptFeedback.blockReason) ? 'refused' : 'empty_completion' };
@@ -80,12 +96,13 @@ geminiFn.json = function (input) {
   });
 };
 function testKey(k, done) {
-  setKey(k); try { localStorage.removeItem('hsk30.aimodel'); } catch (e) { }
+  setKey(k); GEM_LIST = null; try { localStorage.removeItem('hsk30.aimodel'); } catch (e) { }
   gemAsk('Trả lời đúng một từ: OK', false).then(function () { done(true); }, function (e) { done(false, e); });
 }
 
 function aiErr(e) {
   var c = e && e.code;
+  if (c === 'busy') return 'Máy chủ AI của Google đang quá tải tạm thời. Đợi 1–2 phút rồi bấm thử lại.';
   if (c === 'key_refused') return 'Google từ chối khóa AI (' + ((e.message || '').slice(0, 120)) + '). Vào Cài đặt → Khóa AI để kiểm tra lại.';
   if (c === 'bad_key') return 'Khóa AI không dùng được (sai khóa hoặc đã bị xóa). Vào Cài đặt → Khóa AI để kiểm tra lại.';
   if (c === 'not_granted' || c === 'sampling_disabled' || c === 'not_declared' || c === 'capability_disabled' || c === 'capability_removed') {
@@ -176,6 +193,7 @@ function keyGuide() {
     testKey(k, function (ok, e) {
       btn.disabled = false;
       if (ok) { $('keyMsg').textContent = '✅ Khóa dùng được! Vào Ôn tập → Luyện với AI.'; AI.off = false; initAI(); toast('Đã lưu khóa AI.'); }
+      else if (e && e.code === 'busy') { $('keyMsg').textContent = '✅ Khóa đúng và đã lưu. Máy chủ Google đang quá tải tạm thời – đợi vài phút rồi vào Ôn tập → Luyện với AI.'; AI.off = false; initAI(); }
       else if (e && e.code === 'rate_limited') { $('keyMsg').textContent = '✅ Khóa đúng, nhưng đang hết lượt miễn phí. Đợi 1–2 phút rồi dùng.'; AI.off = false; initAI(); }
       else if (e && e.code === 'bad_key') { setKey(''); $('keyMsg').textContent = '❌ Khóa không đúng. Kiểm tra đã copy đủ dãy AIza… chưa (không thừa dấu cách).'; }
       else if (e && e.code === 'key_refused') {
@@ -189,7 +207,7 @@ function keyGuide() {
       else { setKey(''); $('keyMsg').innerHTML = '❌ Chưa kết nối được tới Google. Kiểm tra mạng (một số mạng công ty/wifi xưởng chặn Google AI; thử 4G) rồi thử lại.<div class="muted" style="margin-top:4px">Chi tiết: <code>' + esc(((e && e.message) || '').slice(0, 300)) + '</code></div>'; }
     });
   };
-  if ($('keyDel')) $('keyDel').onclick = function () { setKey(''); try { localStorage.removeItem('hsk30.aimodel'); } catch (e) { } initAI(); closeSheet(); toast('Đã xóa khóa AI trên máy này.'); };
+  if ($('keyDel')) $('keyDel').onclick = function () { setKey(''); GEM_LIST = null; try { localStorage.removeItem('hsk30.aimodel'); } catch (e) { } initAI(); closeSheet(); toast('Đã xóa khóa AI trên máy này.'); };
 }
 function aiSettingsHtml() {
   return '<div class="card"><b>🔑 Khóa AI (Gemini miễn phí)</b><div class="small muted" style="margin:4px 0 8px">' +
