@@ -2,7 +2,7 @@
 'use strict';
 
 // File du lieu net viet, nap khi mo chi tiet tu lan dau. Them cap moi: them ten file vao day.
-var STROKE_FILES = ['data/net/hsk1.js'];
+var STROKE_FILES = ['data/net/hsk1.js', 'data/net/hsk2.js'];
 var SV = { ready: null, writers: [], w: null };
 
 function svLoad(src) {
