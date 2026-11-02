@@ -43,6 +43,21 @@ window.HSK_COURSES = [
                 tu: '经历 具体 已经 主要 确保 进行 按 供应商 之间 协助 管理 文件 期间 升职 转岗 转正 高级 带 丰富 尝试 平台 发展 方向 国际 企业 成长 互相 离职'
               }
             ]
+          },
+          {
+            ten: 'Thảo luận dự án',
+            bai: [
+              {
+                ten: 'Chúng ta cần tìm ra phương án tốt hơn',
+                tu: '方案 建议 提出 推广 活动 成本 效率 采用 其他 换 旧 优势 调整 延期 细节 适合 预算 电商平台 低 跟进 最 决定',
+                on_tap: 'https://melodious-tartufo-fb5904.netlify.app/'
+              },
+              {
+                ten: 'Chúng ta làm bằng cách nào?',
+                tu: '方式 市场 调查 根据 进度 影响 网上 问卷 简单 节省 会计 准备 工具 换 操作 麻烦 了解 功能 速度 试用 决定 线上 线下 效果 担心 范围 测试 结果 推广',
+                on_tap: 'https://sprightly-tapioca-7d05be.netlify.app/'
+              }
+            ]
           }
         ]
       }
