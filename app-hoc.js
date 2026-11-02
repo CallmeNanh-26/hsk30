@@ -18,13 +18,13 @@ VIEWS.progress = function () {
   var anyKnown = Object.keys(S.known).length > 0;
   var msg;
   if (!anyKnown) msg = 'Bạn chưa đánh dấu từ nào. Vào <b>Tra từ</b>, tìm và bấm ✓ ở những từ đã học trong khóa — trang sẽ tự đối chiếu với HSK 3.0.';
-  else if (!target) msg = 'Tuyệt vời! Bạn đã nắm trên 90% từ vựng <b>HSK 1–6</b>.';
+  else if (!target) msg = 'Tuyệt vời! Bạn đã nắm trên 90% từ vựng <b>HSK 1–9</b>.';
   else {
     var s = st[target], miss = s.cumTotal - s.cumKnown;
-    msg = 'Bạn đã nắm khoảng <b>' + pct(s.cumKnown, s.cumTotal) + '% HSK ' + target + '</b>' + (target > 1 ? ' (tính cả HSK ' + (target > 2 ? '1–' + (target - 1) : '1') + ')' : '') +
+    msg = 'Bạn đã nắm khoảng <b>' + pct(s.cumKnown, s.cumTotal) + '% ' + lvName(target) + '</b>' + (target > 1 ? ' (tính cả HSK ' + (target > 2 ? '1–' + (target - 1) : '1') + ')' : '') +
       ', còn thiếu <b>' + miss + '</b> từ.';
     var below = LEVELS.filter(function (l) { return l < target && st[l].known < st[l].total; });
-    if (below.length) msg += '<div class="small muted" style="margin-top:6px">Lưu ý: còn từ chưa học ở ' + below.map(function (l) { return 'HSK ' + l + ' (' + (st[l].total - st[l].known) + ')'; }).join(', ') + '.</div>';
+    if (below.length) msg += '<div class="small muted" style="margin-top:6px">Lưu ý: còn từ chưa học ở ' + below.map(function (l) { return lvName(l) + ' (' + (st[l].total - st[l].known) + ')'; }).join(', ') + '.</div>';
   }
   var h = '<div class="card"><div class="big-msg">' + msg + '</div>' +
     '<div class="row" style="margin-top:12px"><button class="btn" id="copyReport">📋 Sao chép kết quả gửi giáo viên</button></div></div>';
@@ -33,9 +33,9 @@ VIEWS.progress = function () {
   h += '<h3>Theo từng cấp</h3><div class="card">';
   LEVELS.forEach(function (l) {
     var s = st[l], p = pct(s.known, s.total), pc = pct(s.cumKnown, s.cumTotal);
-    h += '<div class="lvrow" data-lvrow="' + l + '"><div class="top"><span><b>HSK ' + l + '</b> <span class="muted small">' + s.known + '/' + s.total + ' từ của cấp này</span></span><span><b>' + p + '%</b></span></div>' +
+    h += '<div class="lvrow" data-lvrow="' + l + '"><div class="top"><span><b>' + lvName(l) + '</b> <span class="muted small">' + s.known + '/' + s.total + ' từ của cấp này</span></span><span><b>' + p + '%</b></span></div>' +
       '<div class="bar"><span style="width:' + p + '%"></span></div>' +
-      '<div class="small muted" style="margin-top:3px">' + (l > 1 ? 'Tích lũy HSK 1–' + l + ': ' + s.cumKnown + '/' + s.cumTotal + ' (' + pc + '%) · ' : '') + 'bấm để xem từ còn thiếu</div>';
+      '<div class="small muted" style="margin-top:3px">' + (l > 1 ? 'Tích lũy HSK 1–' + (l === 7 ? 9 : l) + ': ' + s.cumKnown + '/' + s.cumTotal + ' (' + pc + '%) · ' : '') + 'bấm để xem từ còn thiếu</div>';
     if (openLv === l) h += missingHtml(l);
     h += '</div>';
   });
@@ -52,10 +52,10 @@ VIEWS.progress = function () {
   LEVELS.forEach(function (l) {
     var s = st[l], miss = s.total - s.known;
     n++;
-    if (!miss) { h += '<div class="step done"><div class="n">✓</div><div>Hoàn thành <b>HSK ' + l + '</b></div></div>'; return; }
+    if (!miss) { h += '<div class="step done"><div class="n">✓</div><div>Hoàn thành <b>' + lvName(l) + '</b></div></div>'; return; }
     var d = Math.ceil(miss / per); days += d;
     var pri = WORDS.filter(function (o) { return o.lv === l && !isKnown(o.w) && (o.tags.indexOf('Công xưởng') >= 0 || o.tags.indexOf('Thương mại') >= 0); }).length;
-    h += '<div class="step"><div class="n">' + n + '</div><div><b>HSK ' + l + '</b>: học ' + miss + ' từ còn thiếu ≈ <b>' + d + ' ngày</b>' +
+    h += '<div class="step"><div class="n">' + n + '</div><div><b>' + lvName(l) + '</b>: học ' + miss + ' từ còn thiếu ≈ <b>' + d + ' ngày</b>' +
       (pri ? '<div class="small muted">Ưu tiên ' + pri + ' từ có nhãn Công xưởng / Thương mại — dùng được ngay ở nơi làm việc.</div>' : '') +
       '<div class="small muted">Hết bước này: tổng cộng khoảng ' + days + ' ngày (~' + Math.ceil(days / 30) + ' tháng).</div></div></div>';
   });
@@ -77,7 +77,7 @@ VIEWS.progress = function () {
 };
 function missingHtml(l) {
   var miss = WORDS.filter(function (o) { return o.lv === l && !isKnown(o.w); });
-  if (!miss.length) return '<div class="small" style="margin-top:8px">Bạn đã học hết từ HSK ' + l + ' 🎉</div>';
+  if (!miss.length) return '<div class="small" style="margin-top:8px">Bạn đã học hết từ ' + lvName(l) + ' 🎉</div>';
   miss.sort(function (a, b) { return (b.tags.length > 0) - (a.tags.length > 0); });
   return '<div style="margin-top:10px"><div class="small muted" style="margin-bottom:6px">Còn thiếu ' + miss.length + ' từ (từ có nhãn chủ đề xếp trước). Bấm vào từ để xem chi tiết:</div><div class="missing">' +
     miss.slice(0, 400).map(function (o) { return '<button data-open="' + esc(o.w) + '">' + esc(o.w) + '</button>'; }).join('') +
@@ -85,7 +85,7 @@ function missingHtml(l) {
 }
 function reportText(st) {
   var lines = ['KẾT QUẢ ĐỐI CHIẾU HSK 3.0' + (S.name ? ' – ' + S.name : ''), 'Ngày: ' + new Date().toLocaleDateString('vi-VN')];
-  LEVELS.forEach(function (l) { var s = st[l]; lines.push('HSK ' + l + ': ' + s.known + '/' + s.total + ' (' + pct(s.known, s.total) + '%), tích lũy ' + pct(s.cumKnown, s.cumTotal) + '%'); });
+  LEVELS.forEach(function (l) { var s = st[l]; lines.push(lvName(l) + ': ' + s.known + '/' + s.total + ' (' + pct(s.known, s.total) + '%), tích lũy ' + pct(s.cumKnown, s.cumTotal) + '%'); });
   lines.push('Tổng số từ đã học: ' + Object.keys(S.known).length);
   return lines.join('\n');
 }
@@ -108,7 +108,7 @@ function isDue(w) { return ebDue(w); }
 VIEWS.review = function () {
   if (R.cur) return renderCard();
   var ks = knownWords(), due = ks.filter(function (o) { return isDue(o.w); }), master = ks.filter(function (o) { return (S.eb[o.w] || [0])[0] >= MASTER; });
-  var lvOpts = [['all', 'Tất cả cấp']].concat(LEVELS.map(function (l) { return [String(l), 'HSK ' + l]; })).concat([['0', 'Ngoài HSK']]);
+  var lvOpts = [['all', 'Tất cả cấp']].concat(LEVELS.map(function (l) { return [String(l), lvName(l)]; })).concat([['0', 'Ngoài HSK']]);
   var h = '<div class="stat"><div><b>' + ks.length + '</b><span class="small muted">đã đánh dấu</span></div><div><b>' + due.length + '</b><span class="small muted">cần ôn hôm nay</span></div><div><b>' + master.length + '</b><span class="small muted">đã thuộc</span></div></div>';
   h += '<div class="card" style="margin-top:12px"><div class="row small" style="margin-bottom:10px">Ôn từ: <select id="rLv">' + lvOpts.map(function (x) { return '<option value="' + x[0] + '"' + (R.lv === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select>' +
     ' Mặt trước: <select id="rFront"><option value="hz">Chữ Hán</option><option value="vi">Nghĩa tiếng Việt</option><option value="audio">Nghe</option></select></div>';
@@ -268,7 +268,7 @@ VIEWS.more = function () {
     '<p>Cách 1 – file <code>data/bo-sung.js</code>: mỗi dòng một từ, các cột cách nhau bằng <code>|</code>:<br><code>tu|pinyin|cap|nhan|nghia|cau1|pinyin1|dich1|cau2|pinyin2|dich2|cau hoi|dich cau hoi|tra loi</code></p>' +
     '<p>Cách 2 – file Excel: lưu thành <code>data/bo-sung.csv</code> (CSV UTF-8) với đúng 14 cột như trên, dòng đầu là tiêu đề.</p>' +
     '<p>Từ đã có trong HSK sẽ được bổ sung nhãn/ví dụ; từ mới sẽ được thêm vào danh sách (cấp để trống = “Ngoài HSK”). Nhãn chủ đề khai báo trong <code>data/nhan.js</code>.</p></div></details></div>';
-  h += '<div class="card small muted">Dữ liệu: danh sách từ HSK 3.0 cấp 1–6 theo 新版HSK考试大纲 (2025) – ' + WORDS.filter(function (o) { return typeof o.lv === 'number' && o.lv > 0; }).length + ' từ. Nghĩa tiếng Anh dự phòng từ CC-CEDICT.' +
+  h += '<div class="card small muted">Dữ liệu: danh sách từ HSK 3.0 cấp 1–9 theo 新版HSK考试大纲 (2025) – ' + WORDS.filter(function (o) { return typeof o.lv === 'number' && o.lv > 0; }).length + ' từ. Nghĩa tiếng Anh dự phòng từ CC-CEDICT.' +
     '<div style="margin-top:8px"><button class="btn" id="resetAll">Xóa toàn bộ tiến độ trên máy này</button></div></div>';
   $('view-more').innerHTML = h;
   $('saveName').onclick = function () { S.name = $('stName').value.trim(); save(); updateSub(); toast('Đã lưu tên.'); };

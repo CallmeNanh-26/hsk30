@@ -3,7 +3,8 @@
 
 var POS_VI = { '名': 'danh từ', '动': 'động từ', '形': 'tính từ', '副': 'phó từ', '代': 'đại từ', '数': 'số từ', '量': 'lượng từ',
   '介': 'giới từ', '连': 'liên từ', '助': 'trợ từ', '叹': 'thán từ', '前缀': 'tiền tố', '后缀': 'hậu tố', '数量': 'số lượng từ', '拟声': 'từ tượng thanh' };
-var LEVELS = [1, 2, 3, 4, 5, 6];
+var LEVELS = [1, 2, 3, 4, 5, 6, 7];
+function lvName(l) { return +l === 7 ? 'HSK 7–9' : 'HSK ' + l; } // cap 7 = HSK 7-9 (cao cap)
 var TAG_CLASS = { 'Công xưởng': 'f', 'Thương mại': 'c' };
 
 // ---------- Du lieu ----------
@@ -94,7 +95,7 @@ function norm(s) {
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 function $(id) { return document.getElementById(id); }
 function meaning(o) { return o.vi || (o.en ? '(EN) ' + o.en : '—'); }
-function lvLabel(o) { if (o.mine) return 'Từ của tôi'; if (o.approved) return 'Bổ sung'; return o.lv ? (typeof o.lv === 'number' ? 'HSK ' + o.lv : 'HSK ' + o.lv) : 'Ngoài HSK'; }
+function lvLabel(o) { if (o.mine) return 'Từ của tôi'; if (o.approved) return 'Bổ sung'; return o.lv ? (typeof o.lv === 'number' ? lvName(o.lv) : 'HSK ' + o.lv) : 'Ngoài HSK'; }
 function posLabel(p) { return p ? p.replace(/[（）()]/g, '').split('、').map(function (x) { return POS_VI[x] || x; }).join(', ') : 'cụm từ'; }
 function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 function today() { return Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000); }
@@ -134,7 +135,7 @@ function speak(text, slow) {
 // ---------- Tra tu ----------
 var F = { q: '', lv: 'all', tag: '', st: 'all', limit: 60 };
 function renderChips() {
-  var lv = [['all', 'Tất cả']].concat(LEVELS.map(function (l) { return [String(l), 'HSK ' + l]; }));
+  var lv = [['all', 'Tất cả']].concat(LEVELS.map(function (l) { return [String(l), lvName(l)]; }));
   if (WORDS.some(function (o) { return !o.lv; })) lv.push(['0', 'Ngoài HSK']);
   $('lvChips').innerHTML = lv.map(function (x) { return '<button class="chip' + (F.lv === x[0] ? ' on' : '') + '" data-lv="' + x[0] + '">' + x[1] + '</button>'; }).join('');
   $('tagChips').innerHTML = '<span class="muted small" style="align-self:center">Nhãn:</span>' + TAGS.map(function (t) { return '<button class="chip' + (F.tag === t ? ' tag-on' : '') + '" data-tag="' + esc(t) + '">' + esc(t) + '</button>'; }).join('');
