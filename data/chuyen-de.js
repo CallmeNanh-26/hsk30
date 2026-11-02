@@ -29,6 +29,16 @@ window.HSK_COURSES = [
                 on_tap: 'https://bespoke-cranachan-045fdc.netlify.app/'
               }
             ]
+          },
+          {
+            ten: 'Giới thiệu bản thân',
+            bai: [
+              {
+                ten: 'Tôi xin tự giới thiệu bản thân 1 chút',
+                tu: '应聘 面试 简历 能力 专业 毕业 自我介绍 职位 岗位 行业 平时 强 经验 优点 缺点 擅长 负责 熟悉 爱好 兴趣 沟通 团队合作 办公软件 加入 自己 数据 分析',
+                on_tap: 'https://relaxed-tapioca-03014b.netlify.app/'
+              }
+            ]
           }
         ]
       }
