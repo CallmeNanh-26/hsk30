@@ -9,7 +9,7 @@ var CD_ICON = {
 function cdWords(b) { return ((b && b.tu) || '').split(/\s+/).filter(Boolean); }
 function cdReady(b) { return !!(b && b.ten && b.tu); }
 function cdStat(ws) {
-  var has = ws.filter(function (w) { return BYW[w]; });
+  var has = ws.filter(function (w, i) { return BYW[w] && ws.indexOf(w) === i; }); // tu lap lai giua cac bai chi tinh 1 lan
   return { total: has.length, known: has.filter(isKnown).length };
 }
 // Duyet moi bai cua mot khoa: fn(bai, [phan, chude, bai])
@@ -50,7 +50,7 @@ VIEWS.chuyende = function () {
         h += '<div class="cd-topic"><span>Chủ đề ' + (ti + 1) + '</span>' + esc(t.ten) + '</div><div class="list">' + t.bai.map(function (x, bi) {
           var ready = cdReady(x), s = cdStat(cdWords(x)), key = pi + ',' + ti + ',' + bi;
           return '<div class="item cd-lesson' + (ready ? '' : ' cd-soon') + '"' + (ready ? ' data-cd-l="' + key + '"' : '') + '>' +
-            '<div class="cd-num">B' + (bi + 1) + '</div><div class="main"><div class="cd-ltitle">' + (ready ? esc(x.ten) : 'Đang cập nhật') + '</div>' +
+            '<div class="cd-num">B' + (bi + 1) + '</div><div class="main"><div class="cd-ltitle">' + (ready ? esc(x.ten) : 'Đang cập nhật') + '</div>' + (ready && x.zh ? '<div class="cd-lzh">' + esc(x.zh) + '</div>' : '') +
             '<div class="small muted">' + (ready ? cdWords(x).length + ' từ · đã học ' + s.known + '/' + s.total : 'Nội dung sẽ có trong bản cập nhật') + '</div></div>' +
             (ready ? (s.total && s.known === s.total ? '<span class="cd-chip done">✓ Xong</span>' : '<span class="cd-chip">Học ngay</span>') : '<span class="cd-chip soon">Đang cập nhật</span>') + '</div>';
         }).join('') + '</div>';
@@ -60,7 +60,7 @@ VIEWS.chuyende = function () {
     var ws = cdWords(b), s3 = cdStat(ws), t3 = c.phan[CD.l[0]].chu_de[CD.l[1]];
     h += '<button class="btn ghost cd-back" data-cd-back="course">‹ ' + esc(c.ten) + '</button>';
     h += '<div class="card cd-head"><div class="cd-num big">B' + (CD.l[2] + 1) + '</div><div class="grow"><div class="small muted">' + esc(c.phan[CD.l[0]].ten) + ' · ' + esc(t3.ten) + '</div>' +
-      '<div class="cd-title">' + esc(b.ten) + '</div><div class="small muted">' + ws.length + ' từ · đã học ' + s3.known + '/' + s3.total + '</div></div></div>';
+      '<div class="cd-title">' + esc(b.ten) + '</div>' + (b.zh ? '<div class="cd-zh">' + esc(b.zh) + '</div>' : '') + '<div class="small muted">' + ws.length + ' từ · đã học ' + s3.known + '/' + s3.total + '</div></div></div>';
     h += '<div class="cd-actions"><button class="btn primary" id="cdLearn">✓ Đánh dấu cả bài</button><button class="btn" id="cdCards">🃏 Ôn flashcard</button><button class="btn" id="cdQuiz">✍️ Luyện tập</button>' +
       (b.on_tap ? '<a class="btn cd-link" href="' + esc(b.on_tap) + '" target="_blank" rel="noopener">🔗 Ôn tập bài này ↗</a>' : '') + '</div>';
     h += '<div class="list">' + ws.map(function (w) {

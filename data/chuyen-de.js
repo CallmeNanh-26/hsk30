@@ -1,6 +1,6 @@
 // ===== KHOA CHUYEN DE =====
 // Cau truc: khoa -> phan (vd: Phan co ban) -> chu de -> bai.
-// Moi bai: ten (tieu de), tu (chu Han cach nhau dau cach), on_tap (duong link on tap rieng, neu co).
+// Moi bai: ten (tieu de), zh (tieu de tieng Trung, neu co), tu (chu Han cach nhau dau cach), on_tap (duong link on tap rieng, neu co).
 // Bai chua co noi dung: de {} – app se hien "Dang cap nhat".
 // Tu chua co trong bang tu thi them vao data/bo-sung.js (va gan nhan trong data/nhan.js).
 window.HSK_COURSES = [
@@ -19,8 +19,15 @@ window.HSK_COURSES = [
                 tu: '价格 便宜 贵 打折 现金 刷卡 扫码 支付 付款 大概 发票 需要 笔记本电脑 顾客 老板 总共 一共 批',
                 on_tap: 'https://tangerine-malasada-023816.netlify.app/'
               },
-              {},
-              {}
+              {
+                ten: 'Mấy giờ họp?', zh: '几点开会？',
+                tu: '会议 日程 安排 计划 开会 参加 准时 迟到 讨论 推迟 改 本来 相关 部门 通知 提醒'
+              },
+              {
+                ten: 'Tôi sắp trễ rồi',
+                tu: '还 出发 出门 路上 一定 迟到 堵车 着急 差点儿 忘 借 抱歉 压力 闹钟 经常 带 拖延 赶 赶紧 高峰期 幸好 抄小路 尽量 耽误 来得及 来不及 打车 消息',
+                on_tap: 'https://bespoke-cranachan-045fdc.netlify.app/'
+              }
             ]
           }
         ]
