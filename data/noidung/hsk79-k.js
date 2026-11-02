@@ -16,7 +16,7 @@ HSK_CONTENT.push(`
 隐形|vô hình, ẩn|她戴着隐形眼镜。|Tā dài zhe yǐnxíng yǎnjìng.|Cô ấy đeo kính áp tròng.
 大局|đại cục, toàn cục|我们要以大局为重。|Wǒmen yào yǐ dàjú wéi zhòng.|Chúng ta phải đặt đại cục lên hàng đầu.
 人手|nhân lực, người làm|最近订单多，人手不够。|Zuìjìn dìngdān duō, rénshǒu bú gòu.|Gần đây đơn hàng nhiều, thiếu người làm.
-暂|tạm thời|这台机器暂停使用。|Zhè tái jīqì zàn tíng shǐyòng.|Chiếc máy này tạm ngừng sử dụng.
+暂|tạm thời|这台机器暂不使用。|Zhè tái jīqì zàn bù shǐyòng.|Chiếc máy này tạm thời không sử dụng.
 滥用|lạm dụng|不要滥用抗生素。|Búyào lànyòng kàngshēngsù.|Đừng lạm dụng thuốc kháng sinh.
 冻结|đóng băng, phong tỏa|他的银行账户被冻结了。|Tā de yínháng zhànghù bèi dòngjié le.|Tài khoản ngân hàng của anh ta bị phong tỏa.
 愈合|lành (vết thương)|伤口已经愈合了。|Shāngkǒu yǐjīng yùhé le.|Vết thương đã lành rồi.
@@ -58,7 +58,7 @@ HSK_CONTENT.push(`
 探险|thám hiểm|他们去山里探险了。|Tāmen qù shān li tànxiǎn le.|Họ đã đi thám hiểm trong núi.
 呼唤|gọi, kêu gọi|妈妈在门口呼唤孩子回家。|Māma zài ménkǒu hūhuàn háizi huí jiā.|Mẹ đứng ở cửa gọi con về nhà.
 主力|lực lượng chủ lực|他是我们车间的主力。|Tā shì wǒmen chējiān de zhǔlì.|Anh ấy là trụ cột của xưởng chúng tôi.
-盈利|lợi nhuận; có lãi|公司今年开始盈利了。|Gōngsī jīnnián kāishǐ yínglì le.|Năm nay công ty bắt đầu có lãi.
+盈利|lợi nhuận; có lãi|公司今年开始有盈利了。|Gōngsī jīnnián kāishǐ yǒu yínglì le.|Năm nay công ty bắt đầu có lãi.
 顶尖|hàng đầu|他是这个行业的顶尖人才。|Tā shì zhège hángyè de dǐngjiān réncái.|Anh ấy là nhân tài hàng đầu trong ngành này.
 传媒|truyền thông|她在一家传媒公司上班。|Tā zài yì jiā chuánméi gōngsī shàngbān.|Cô ấy làm ở một công ty truyền thông.
 放置|đặt, để|危险品要放置在指定地点。|Wēixiǎnpǐn yào fàngzhì zài zhǐdìng dìdiǎn.|Hàng nguy hiểm phải để ở nơi quy định.
@@ -97,7 +97,7 @@ HSK_CONTENT.push(`
 平稳|ổn định, êm|今年的生产很平稳。|Jīnnián de shēngchǎn hěn píngwěn.|Năm nay sản xuất rất ổn định.
 粪|phân|农民用粪给地施肥。|Nóngmín yòng fèn gěi dì shīféi.|Nông dân dùng phân để bón ruộng.
 框|khung; đóng khung|请把这张照片装进框里。|Qǐng bǎ zhè zhāng zhàopiàn zhuāng jìn kuàng li.|Xin cho bức ảnh này vào khung.
-惯|quen; chiều hư|我已经习惯了上夜班。|Wǒ yǐjīng xíguàn le shàng yèbān.|Tôi đã quen làm ca đêm rồi.
+惯|quen; chiều hư|这孩子被爷爷奶奶惯坏了。|Zhè háizi bèi yéye nǎinai guàn huài le.|Đứa trẻ này bị ông bà chiều hư rồi.
 舆论|dư luận|这件事引起了社会舆论的关注。|Zhè jiàn shì yǐnqǐ le shèhuì yúlùn de guānzhù.|Việc này thu hút sự chú ý của dư luận xã hội.
 预告|báo trước, đoạn giới thiệu|电视上播了新片的预告。|Diànshì shang bō le xīn piàn de yùgào.|Trên tivi phát đoạn giới thiệu phim mới.
 禁区|khu vực cấm|这里是禁区，外人不能进入。|Zhèlǐ shì jìnqū, wàirén bù néng jìnrù.|Đây là khu vực cấm, người ngoài không được vào.

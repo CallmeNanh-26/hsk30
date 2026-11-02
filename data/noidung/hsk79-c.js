@@ -29,7 +29,7 @@ HSK_CONTENT.push(`
 怪物|quái vật|孩子们喜欢看怪物电影。|Háizimen xǐhuan kàn guàiwu diànyǐng.|Bọn trẻ thích xem phim quái vật.
 登陆|đổ bộ; đăng nhập|台风明天将在北部登陆。|Táifēng míngtiān jiāng zài běibù dēnglù.|Bão sẽ đổ bộ vào miền Bắc ngày mai.
 灵感|cảm hứng|这个设计的灵感来自大自然。|Zhège shèjì de línggǎn láizì dà zìrán.|Cảm hứng của thiết kế này đến từ thiên nhiên.
-抹|bôi, xoa; lau|她在脸上抹了点儿油。|Tā zài liǎn shang mǒ le diǎnr yóu.|Cô ấy thoa một chút kem lên mặt.
+抹|bôi, xoa; lau|她在脸上抹了点儿面霜。|Tā zài liǎn shang mǒ le diǎnr miànshuāng.|Cô ấy thoa một chút kem lên mặt.
 假装|giả vờ|他假装没听见。|Tā jiǎzhuāng méi tīngjiàn.|Anh ấy giả vờ không nghe thấy.
 边缘|rìa, mép; bờ vực|公司在破产的边缘。|Gōngsī zài pòchǎn de biānyuán.|Công ty đang bên bờ vực phá sản.
 敬|kính, tôn kính; mời (rượu)|我敬大家一杯！|Wǒ jìng dàjiā yì bēi!|Tôi xin mời mọi người một ly!
@@ -100,7 +100,7 @@ HSK_CONTENT.push(`
 股份|cổ phần|他持有公司百分之十的股份。|Tā chí yǒu gōngsī bǎi fēn zhī shí de gǔfèn.|Anh ấy nắm giữ 10% cổ phần công ty.
 开工|khởi công, bắt đầu làm việc|新工厂下个月开工。|Xīn gōngchǎng xià gè yuè kāigōng.|Nhà máy mới tháng sau khởi công.
 低调|kín tiếng, khiêm tốn|他做人很低调。|Tā zuòrén hěn dīdiào.|Anh ấy sống rất kín tiếng.
-光荣|vinh quang, vẻ vang|他被评为光荣员工。|Tā bèi píngwéi guāngróng yuángōng.|Anh ấy được bình chọn là nhân viên vinh dự.
+光荣|vinh quang, vẻ vang|能为国家出力是一件光荣的事。|Néng wèi guójiā chūlì shì yí jiàn guāngróng de shì.|Được góp sức cho đất nước là một việc vẻ vang.
 凶手|hung thủ|警察终于抓到了凶手。|Jǐngchá zhōngyú zhuādào le xiōngshǒu.|Cảnh sát cuối cùng đã bắt được hung thủ.
 卡车|xe tải|卡车把货送到了仓库。|Kǎchē bǎ huò sòng dào le cāngkù.|Xe tải đã chở hàng đến kho.
 时装|thời trang|她喜欢看时装表演。|Tā xǐhuan kàn shízhuāng biǎoyǎn.|Cô ấy thích xem trình diễn thời trang.
@@ -123,7 +123,7 @@ HSK_CONTENT.push(`
 宪法|hiến pháp|宪法是国家的根本大法。|Xiànfǎ shì guójiā de gēnběn dàfǎ.|Hiến pháp là luật cơ bản của nhà nước.
 钉|đóng (đinh)|请把这块板钉在墙上。|Qǐng bǎ zhè kuài bǎn dìng zài qiáng shang.|Xin đóng tấm ván này lên tường.
 尽情|thỏa thích|周末大家尽情地玩吧。|Zhōumò dàjiā jìnqíng de wán ba.|Cuối tuần mọi người cứ chơi thỏa thích nhé.
-防御|phòng ngự|这个软件能防御病毒。|Zhège ruǎnjiàn néng fángyù bìngdú.|Phần mềm này có thể phòng chống virus.
+防御|phòng ngự|我们要加强网络安全防御。|Wǒmen yào jiāqiáng wǎngluò ānquán fángyù.|Chúng ta phải tăng cường phòng thủ an ninh mạng.
 赛车|đua xe; xe đua|他从小就喜欢赛车。|Tā cóng xiǎo jiù xǐhuan sàichē.|Từ nhỏ anh ấy đã thích đua xe.
 人格|nhân cách|我们要尊重每个人的人格。|Wǒmen yào zūnzhòng měi gè rén de réngé.|Chúng ta phải tôn trọng nhân cách của mỗi người.
 `);

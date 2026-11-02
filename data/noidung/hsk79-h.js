@@ -56,7 +56,7 @@ HSK_CONTENT.push(`
 庆幸|mừng vì, may mắn|我们很庆幸没有人受伤。|Wǒmen hěn qìngxìng méiyǒu rén shòushāng.|Chúng tôi mừng vì không ai bị thương.
 三角|tam giác|这是一个三角形的零件。|Zhè shì yí gè sānjiǎoxíng de língjiàn.|Đây là một linh kiện hình tam giác.
 条约|hiệp ước|两国签订了和平条约。|Liǎng guó qiāndìng le hépíng tiáoyuē.|Hai nước đã ký hiệp ước hòa bình.
-享|hưởng|员工享有带薪年假。|Yuángōng xiǎngyǒu dàixīn niánjià.|Nhân viên được hưởng nghỉ phép năm có lương.
+享|hưởng|他退休后在家享清福。|Tā tuìxiū hòu zài jiā xiǎng qīngfú.|Sau khi nghỉ hưu ông ấy ở nhà hưởng nhàn.
 陆军|lục quân|他在陆军服役两年。|Tā zài lùjūn fúyì liǎng nián.|Anh ấy phục vụ trong lục quân hai năm.
 恐慌|hoảng loạn, khủng hoảng|消息传开后，大家都很恐慌。|Xiāoxi chuán kāi hòu, dàjiā dōu hěn kǒnghuāng.|Tin tức lan ra, mọi người đều hoảng loạn.
 旺|vượng, thịnh, đông khách|这家饭店的生意很旺。|Zhè jiā fàndiàn de shēngyi hěn wàng.|Quán ăn này buôn bán rất đắt khách.

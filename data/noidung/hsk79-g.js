@@ -111,10 +111,10 @@ HSK_CONTENT.push(`
 直觉|trực giác|我的直觉告诉我他在说谎。|Wǒ de zhíjué gàosu wǒ tā zài shuōhuǎng.|Trực giác bảo tôi rằng anh ta đang nói dối.
 诊所|phòng khám|工厂旁边有一家小诊所。|Gōngchǎng pángbiān yǒu yì jiā xiǎo zhěnsuǒ.|Bên cạnh nhà máy có một phòng khám nhỏ.
 掐|bấm, véo; ngắt|他掐了一下自己，确定不是做梦。|Tā qiā le yíxià zìjǐ, quèdìng bú shì zuòmèng.|Anh ấy véo mình một cái, chắc chắn không phải đang mơ.
-前线|tiền tuyến|他们在生产第一前线工作。|Tāmen zài shēngchǎn dì-yī qiánxiàn gōngzuò.|Họ làm việc ở tuyến đầu sản xuất.
+前线|tiền tuyến, tuyến đầu|记者在抗洪前线采访。|Jìzhě zài kànghóng qiánxiàn cǎifǎng.|Phóng viên đưa tin tại tuyến đầu chống lũ.
 忠实|trung thành; trung thực|他是我们的忠实客户。|Tā shì wǒmen de zhōngshí kèhù.|Ông ấy là khách hàng trung thành của chúng tôi.
 亲近|thân cận, gần gũi|孩子跟奶奶很亲近。|Háizi gēn nǎinai hěn qīnjìn.|Đứa trẻ rất gần gũi với bà.
-延|kéo dài; hoãn|交货期延了一个星期。|Jiāohuòqī yán le yí gè xīngqī.|Hạn giao hàng bị lùi một tuần.
+延|kéo dài; lùi lại|交货期往后延了一个星期。|Jiāohuòqī wǎng hòu yán le yí gè xīngqī.|Hạn giao hàng bị lùi lại một tuần.
 缓|chậm; hoãn; dịu đi|这件事不急，可以缓一缓。|Zhè jiàn shì bù jí, kěyǐ huǎn yi huǎn.|Việc này không gấp, có thể hoãn lại một chút.
 坦白|thẳng thắn; thú nhận|我坦白地说，这个方案不行。|Wǒ tǎnbái de shuō, zhège fāng'àn bù xíng.|Nói thẳng ra, phương án này không được.
 社会主义|chủ nghĩa xã hội|越南是社会主义国家。|Yuènán shì shèhuì zhǔyì guójiā.|Việt Nam là nước xã hội chủ nghĩa.

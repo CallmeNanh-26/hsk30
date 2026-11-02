@@ -9,7 +9,7 @@ HSK_CONTENT.push(`
 同志|đồng chí|这位同志是新来的技术员。|Zhè wèi tóngzhì shì xīn lái de jìshùyuán.|Đồng chí này là kỹ thuật viên mới đến.
 若|nếu, nếu như (văn viết)|若有问题，请随时联系我。|Ruò yǒu wèntí, qǐng suíshí liánxì wǒ.|Nếu có vấn đề, xin cứ liên hệ tôi bất cứ lúc nào.
 而已|mà thôi, chỉ… thôi|我只是开个玩笑而已。|Wǒ zhǐshì kāi ge wánxiào éryǐ.|Tôi chỉ đùa thôi mà.
-文|văn, văn chương; chữ viết; văn bản|这篇文写得很好。|Zhè piān wén xiě de hěn hǎo.|Bài văn này viết rất hay.
+文|văn, văn chương; khoa xã hội (học văn)|他是学文的，不太懂技术。|Tā shì xué wén de, bú tài dǒng jìshù.|Anh ấy học khối xã hội, không rành kỹ thuật lắm.
 经|trải qua, qua; kinh (sách)|经大家讨论，计划通过了。|Jīng dàjiā tǎolùn, jìhuà tōngguò le.|Qua thảo luận của mọi người, kế hoạch đã được thông qua.
 疯|điên; điên cuồng|工作太多，我快要疯了。|Gōngzuò tài duō, wǒ kuài yào fēng le.|Việc nhiều quá, tôi sắp phát điên rồi.
 鬼|ma, quỷ; lén lút|小孩子怕鬼，不敢一个人睡。|Xiǎo háizi pà guǐ, bù gǎn yí gè rén shuì.|Trẻ con sợ ma, không dám ngủ một mình.
@@ -36,9 +36,9 @@ HSK_CONTENT.push(`
 铁|sắt; cứng rắn, chắc chắn|这扇门是铁做的。|Zhè shàn mén shì tiě zuò de.|Cánh cửa này làm bằng sắt.
 注|chú thích; rót vào; chú ý|请在表格下面注明日期。|Qǐng zài biǎogé xiàmiàn zhùmíng rìqī.|Xin ghi rõ ngày tháng ở dưới bảng.
 爽|sảng khoái, dễ chịu; thẳng thắn|洗完澡感觉真爽。|Xǐ wán zǎo gǎnjué zhēn shuǎng.|Tắm xong thấy thật sảng khoái.
-供|cung cấp|这家工厂供电子零件。|Zhè jiā gōngchǎng gōng diànzǐ língjiàn.|Nhà máy này cung cấp linh kiện điện tử.
+供|cung cấp|这家工厂专门给手机厂供货。|Zhè jiā gōngchǎng zhuānmén gěi shǒujī chǎng gōnghuò.|Nhà máy này chuyên cung cấp hàng cho nhà máy điện thoại.
 探|dò, thăm dò; thăm|他探出头看了看外面。|Tā tàn chū tóu kàn le kàn wàimiàn.|Anh ấy thò đầu ra nhìn bên ngoài.
-法庭|tòa án|这个案子下个月开法庭。|Zhège ànzi xià gè yuè kāi fǎtíng.|Vụ án này tháng sau xét xử tại tòa.
+法庭|tòa án|这个案子下个月在法庭审理。|Zhège ànzi xià gè yuè zài fǎtíng shěnlǐ.|Vụ án này tháng sau sẽ được xét xử tại tòa.
 联盟|liên minh|几家公司组成了联盟。|Jǐ jiā gōngsī zǔchéng le liánméng.|Mấy công ty đã lập thành liên minh.
 进攻|tấn công, tiến công|球队开始进攻了。|Qiúduì kāishǐ jìngōng le.|Đội bóng bắt đầu tấn công.
 并非|không phải, hoàn toàn không|事情并非你想的那样。|Shìqing bìngfēi nǐ xiǎng de nàyàng.|Sự việc hoàn toàn không như bạn nghĩ.
@@ -50,7 +50,7 @@ HSK_CONTENT.push(`
 托|nhờ, gửi gắm; nâng, đỡ|我托朋友买了一张票。|Wǒ tuō péngyou mǎi le yì zhāng piào.|Tôi nhờ bạn mua một tấm vé.
 一面|một mặt; vừa… vừa…|他一面工作，一面学习。|Tā yímiàn gōngzuò, yímiàn xuéxí.|Anh ấy vừa làm việc vừa học.
 拨|gạt, quay (số); phân bổ|公司拨了一笔钱买新设备。|Gōngsī bō le yì bǐ qián mǎi xīn shèbèi.|Công ty phân bổ một khoản tiền mua thiết bị mới.
-军事|quân sự|这里是军事区，不能拍照。|Zhèlǐ shì jūnshì qū, bù néng pāizhào.|Đây là khu quân sự, không được chụp ảnh.
+军事|quân sự|这里是军事禁区，不能拍照。|Zhèlǐ shì jūnshì jìnqū, bù néng pāizhào.|Đây là khu vực quân sự cấm, không được chụp ảnh.
 杆|cây sào, cột; cán|路边有一根电线杆。|Lù biān yǒu yì gēn diànxiàn gān.|Bên đường có một cột điện.
 粉丝|người hâm mộ, fan; miến|这个歌手有很多粉丝。|Zhège gēshǒu yǒu hěn duō fěnsī.|Ca sĩ này có rất nhiều người hâm mộ.
 所在|nơi, chỗ; nằm ở|这就是问题的所在。|Zhè jiù shì wèntí de suǒzài.|Đây chính là chỗ mấu chốt của vấn đề.
@@ -72,8 +72,8 @@ HSK_CONTENT.push(`
 尿|nước tiểu; đi tiểu|医生让他去验尿。|Yīshēng ràng tā qù yàn niào.|Bác sĩ bảo anh ấy đi xét nghiệm nước tiểu.
 护|bảo vệ, che chở|工人要戴护目镜。|Gōngrén yào dài hùmùjìng.|Công nhân phải đeo kính bảo hộ.
 眼神|ánh mắt; thị lực|他的眼神很坚定。|Tā de yǎnshén hěn jiāndìng.|Ánh mắt anh ấy rất kiên định.
-计|kế, mưu; tính toán; máy đo|这是个好计，我们试试吧。|Zhè shì ge hǎo jì, wǒmen shìshi ba.|Đây là một kế hay, chúng ta thử xem.
-精|tinh, tinh xảo; giỏi; tinh chất|他对电脑很精。|Tā duì diànnǎo hěn jīng.|Anh ấy rất giỏi về máy tính.
+计|kế, mưu; tính toán; máy đo|他想了一条妙计，解决了问题。|Tā xiǎng le yì tiáo miàojì, jiějué le wèntí.|Anh ấy nghĩ ra một diệu kế, giải quyết được vấn đề.
+精|tinh, tinh xảo; khôn, giỏi; tinh chất|他做生意很精，从不吃亏。|Tā zuò shēngyi hěn jīng, cóng bù chīkuī.|Anh ấy làm ăn rất khôn, chưa bao giờ chịu thiệt.
 毁|phá hủy, hủy hoại|大火毁了整个仓库。|Dàhuǒ huǐ le zhěnggè cāngkù.|Trận hỏa hoạn đã phá hủy toàn bộ nhà kho.
 斗|đấu, tranh đấu|他们斗了一辈子。|Tāmen dòu le yíbèizi.|Họ đã đấu đá nhau cả đời.
 战士|chiến sĩ|战士们在雨中训练。|Zhànshìmen zài yǔ zhōng xùnliàn.|Các chiến sĩ luyện tập dưới mưa.

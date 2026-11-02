@@ -40,7 +40,7 @@ HSK_CONTENT.push(`
 包围|bao vây|房子被警察包围了。|Fángzi bèi jǐngchá bāowéi le.|Ngôi nhà đã bị cảnh sát bao vây.
 玉|ngọc|她戴着一个玉手镯。|Tā dài zhe yí gè yù shǒuzhuó.|Cô ấy đeo một chiếc vòng tay ngọc.
 隔离|cách ly|病人需要隔离治疗。|Bìngrén xūyào gélí zhìliáo.|Bệnh nhân cần được cách ly điều trị.
-人性|nhân tính, tính người|这种管理方式很有人性。|Zhè zhǒng guǎnlǐ fāngshì hěn yǒu rénxìng.|Cách quản lý này rất có tính nhân văn.
+人性|nhân tính, tính người|这种管理方式很人性化。|Zhè zhǒng guǎnlǐ fāngshì hěn rénxìnghuà.|Cách quản lý này rất nhân văn.
 人选|người được chọn, ứng viên|新经理的人选还没定。|Xīn jīnglǐ de rénxuǎn hái méi dìng.|Người cho vị trí giám đốc mới vẫn chưa được chốt.
 美妙|tuyệt diệu, tuyệt vời|这首曲子真美妙。|Zhè shǒu qǔzi zhēn měimiào.|Bản nhạc này thật tuyệt vời.
 作风|tác phong|他的工作作风很踏实。|Tā de gōngzuò zuòfēng hěn tāshi.|Tác phong làm việc của anh ấy rất chắc chắn.

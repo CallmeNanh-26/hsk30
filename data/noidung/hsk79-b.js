@@ -44,7 +44,7 @@ HSK_CONTENT.push(`
 罢了|mà thôi, chỉ… thôi|我只是随便问问罢了。|Wǒ zhǐshì suíbiàn wènwen bàle.|Tôi chỉ hỏi bâng quơ thôi.
 贼|kẻ trộm; (khẩu ngữ) cực kỳ|昨晚家里进了贼。|Zuówǎn jiā li jìn le zéi.|Tối qua nhà bị trộm vào.
 啦啦队|đội cổ vũ|啦啦队为球员们加油。|Lālāduì wèi qiúyuánmen jiāyóu.|Đội cổ vũ cổ vũ cho các cầu thủ.
-尚|vẫn, còn (văn viết)|这个问题尚没有解决。|Zhège wèntí shàng méiyǒu jiějué.|Vấn đề này vẫn chưa được giải quyết.
+尚|vẫn, còn (văn viết)|这个问题尚待解决。|Zhège wèntí shàng dài jiějué.|Vấn đề này vẫn còn chờ giải quyết.
 授权|ủy quyền, cấp phép|经理授权他签这份合同。|Jīnglǐ shòuquán tā qiān zhè fèn hétong.|Giám đốc ủy quyền cho anh ấy ký hợp đồng này.
 行政|hành chính|她在行政部负责接待。|Tā zài xíngzhèngbù fùzé jiēdài.|Cô ấy phụ trách lễ tân ở phòng hành chính.
 司法|tư pháp|司法部门正在调查此事。|Sīfǎ bùmén zhèngzài diàochá cǐ shì.|Cơ quan tư pháp đang điều tra việc này.
@@ -84,7 +84,7 @@ HSK_CONTENT.push(`
 子弹|viên đạn|警察在现场找到一颗子弹。|Jǐngchá zài xiànchǎng zhǎodào yì kē zǐdàn.|Cảnh sát tìm thấy một viên đạn tại hiện trường.
 首席|đứng đầu, trưởng (vị trí)|他是公司的首席执行官。|Tā shì gōngsī de shǒuxí zhíxíngguān.|Ông ấy là giám đốc điều hành (CEO) của công ty.
 唱片|đĩa hát, đĩa nhạc|爷爷喜欢听老唱片。|Yéye xǐhuan tīng lǎo chàngpiàn.|Ông nội thích nghe đĩa nhạc cũ.
-攻|tấn công; chuyên nghiên cứu|他在大学攻的是机械专业。|Tā zài dàxué gōng de shì jīxiè zhuānyè.|Ở đại học anh ấy chuyên ngành cơ khí.
+攻|tấn công; chuyên nghiên cứu|他在大学主攻机械专业。|Tā zài dàxué zhǔgōng jīxiè zhuānyè.|Ở đại học anh ấy chuyên sâu ngành cơ khí.
 移植|cấy ghép; chuyển (cây)|他做了肾移植手术。|Tā zuò le shèn yízhí shǒushù.|Anh ấy đã làm phẫu thuật ghép thận.
 事务所|văn phòng (luật, kế toán…)|她在一家律师事务所工作。|Tā zài yì jiā lǜshī shìwùsuǒ gōngzuò.|Cô ấy làm việc ở một văn phòng luật.
 借口|cái cớ, viện cớ|迟到了就别找借口。|Chídào le jiù bié zhǎo jièkǒu.|Đến muộn thì đừng viện cớ.

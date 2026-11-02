@@ -93,7 +93,7 @@ HSK_CONTENT.push(`
 癌|ung thư|早发现的癌是可以治疗的。|Zǎo fāxiàn de ái shì kěyǐ zhìliáo de.|Ung thư phát hiện sớm là có thể chữa được.
 证人|nhân chứng|证人在法庭上说了实话。|Zhèngrén zài fǎtíng shang shuō le shíhuà.|Nhân chứng đã nói sự thật trước tòa.
 清新|trong lành, tươi mát|雨后空气很清新。|Yǔ hòu kōngqì hěn qīngxīn.|Sau mưa không khí rất trong lành.
-征|trưng thu; tuyển; dấu hiệu|公司正在征新员工。|Gōngsī zhèngzài zhēng xīn yuángōng.|Công ty đang tuyển nhân viên mới.
+征|trưng thu; chiêu mộ; dấu hiệu|国家依法向企业征税。|Guójiā yīfǎ xiàng qǐyè zhēng shuì.|Nhà nước thu thuế doanh nghiệp theo pháp luật.
 坦克|xe tăng|博物馆里有一辆旧坦克。|Bówùguǎn li yǒu yí liàng jiù tǎnkè.|Trong bảo tàng có một chiếc xe tăng cũ.
 自称|tự xưng|他自称是公司的老板。|Tā zìchēng shì gōngsī de lǎobǎn.|Anh ta tự xưng là chủ công ty.
 毁灭|hủy diệt|战争毁灭了这座城市。|Zhànzhēng huǐmiè le zhè zuò chéngshì.|Chiến tranh đã hủy diệt thành phố này.

@@ -66,7 +66,7 @@ HSK_CONTENT.push(`
 过不去|không qua được; làm khó|你为什么总跟我过不去？|Nǐ wèishénme zǒng gēn wǒ guòbuqù?|Sao bạn cứ làm khó tôi thế?
 肇事|gây chuyện, gây tai nạn|肇事司机已经被抓了。|Zhàoshì sījī yǐjīng bèi zhuā le.|Tài xế gây tai nạn đã bị bắt.
 气势|khí thế|这座大楼很有气势。|Zhè zuò dàlóu hěn yǒu qìshì.|Tòa nhà này rất bề thế.
-斩|chém, chặt|这把刀可以斩骨头。|Zhè bǎ dāo kěyǐ zhǎn gǔtou.|Con dao này có thể chặt xương.
+斩|chém, chặt|师傅把烧鸭斩成小块。|Shīfu bǎ shāoyā zhǎn chéng xiǎo kuài.|Đầu bếp chặt vịt quay thành miếng nhỏ.
 猎人|thợ săn|猎人在山里打猎。|Lièrén zài shān li dǎliè.|Thợ săn đi săn trong núi.
 丢脸|mất mặt|在客户面前出错太丢脸了。|Zài kèhù miànqián chūcuò tài diūliǎn le.|Mắc lỗi trước mặt khách hàng thật mất mặt.
 慎重|thận trọng|这件事要慎重考虑。|Zhè jiàn shì yào shènzhòng kǎolǜ.|Việc này phải cân nhắc thận trọng.

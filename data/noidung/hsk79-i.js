@@ -121,7 +121,7 @@ HSK_CONTENT.push(`
 决议|nghị quyết|会议通过了一项决议。|Huìyì tōngguò le yí xiàng juéyì.|Cuộc họp đã thông qua một nghị quyết.
 期盼|mong đợi|我们期盼着与贵公司合作。|Wǒmen qīpàn zhe yǔ guì gōngsī hézuò.|Chúng tôi mong được hợp tác với quý công ty.
 把手|tay nắm, tay cầm|门把手坏了。|Mén bǎshou huài le.|Tay nắm cửa bị hỏng rồi.
-余|dư, thừa; hơn|这批货还余了二十箱。|Zhè pī huò hái yú le èrshí xiāng.|Lô hàng này còn dư hai mươi thùng.
+余|dư, thừa; hơn|这批货卖完后还余下二十箱。|Zhè pī huò mài wán hòu hái yúxià èrshí xiāng.|Lô hàng này bán xong vẫn còn dư hai mươi thùng.
 过错|lỗi lầm|这不是你的过错。|Zhè bú shì nǐ de guòcuò.|Đây không phải lỗi của bạn.
 软弱|yếu đuối|遇到困难不能软弱。|Yùdào kùnnan bù néng ruǎnruò.|Gặp khó khăn không được yếu đuối.
 和解|hòa giải|双方最后和解了。|Shuāngfāng zuìhòu héjiě le.|Cuối cùng hai bên đã hòa giải.
