@@ -389,3 +389,26 @@ nav.tabs button.active { color: var(--brand-deep); }
 .cd-topic + .list { margin-bottom: 12px; }
 .cd-num { font-size: 13px; }
 .cd-link { background: var(--ink); border-color: var(--ink); color: var(--on-brand) !important; }
+
+/* ---- Cach viet chu ---- */
+.sv-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.sv-ch { text-align: center; }
+.sv-box {
+  width: 104px; height: 104px; border: 1.5px solid var(--line); border-radius: 10px; background-color: var(--card);
+  background-image:
+    linear-gradient(to right, transparent calc(50% - .5px), var(--line) calc(50% - .5px), var(--line) calc(50% + .5px), transparent calc(50% + .5px)),
+    linear-gradient(to bottom, transparent calc(50% - .5px), var(--line) calc(50% - .5px), var(--line) calc(50% + .5px), transparent calc(50% + .5px));
+  touch-action: none;
+}
+.sv-box.on { border-color: var(--seal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--seal) 18%, transparent); }
+.sv-msg { text-align: center; margin: 10px 0 8px; }
+.sv-btns { justify-content: center; flex-wrap: wrap; gap: 8px; }
+.sv-steps[hidden] { display: none; }
+.sv-steps { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 10px; display: grid; gap: 10px; }
+.sv-steprow { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.sv-steprow .hz-s { font-family: 'Noto Serif SC', serif; font-size: 22px; color: var(--ink); width: 34px; text-align: center; }
+.sv-step { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
+.sv-step path.old { fill: var(--ink); }
+.sv-step path.new { fill: var(--seal); }
+.sv-step path.rest { fill: var(--line); opacity: .55; }
+.sv-step text { font-size: 150px; fill: var(--muted); font-family: inherit; }
