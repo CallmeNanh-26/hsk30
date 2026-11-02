@@ -32,7 +32,8 @@ function svSteps(c) {
 
 function svHtml(w) {
   var cs = svChars(w);
-  if (!cs.length) return '';
+  // Chi hien khi du du lieu cho moi chu Han trong tu (tranh hien thieu chu)
+  if (!cs.length || cs.length !== Array.from(w).filter(function (c) { return /[㐀-鿿]/.test(c); }).length) return '';
   return '<h3>✍️ Cách viết</h3><div class="card sv-card">' +
     '<div class="sv-row">' + cs.map(function (c, i) {
       return '<div class="sv-ch"><div class="sv-box" id="svBox' + i + '"></div><div class="small muted">' + HSK_STROKES[c].strokes.length + ' nét</div></div>';

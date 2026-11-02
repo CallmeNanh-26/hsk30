@@ -69,15 +69,22 @@
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 
-<script src="data/danh-sach.js"></script>
 <script>
-  // Tai song song cac file du lieu nhung chay dung thu tu (async=false); file nao thieu thi bo qua
-  (window.HSK_FILES || []).concat(['app.js', 'app-tu.js', 'app-nhac.js', 'app-ai.js', 'app-chuyende.js', 'app-hoc.js', 'app-viet.js']).forEach(function (f) {
-    var el = document.createElement('script');
-    el.src = f + '?v=' + (window.HSK_VERSION || '1');
-    el.async = false;
-    document.body.appendChild(el);
-  });
+  // danh-sach.js luon tai moi (khong dung ban cu trong bo nho dem), de HSK_VERSION moi nhat quyet dinh phien ban cac file khac
+  (function () {
+    var ds = document.createElement('script');
+    ds.src = 'data/danh-sach.js?t=' + Date.now();
+    ds.onload = function () {
+      // Tai song song cac file du lieu nhung chay dung thu tu (async=false); file nao thieu thi bo qua
+      (window.HSK_FILES || []).concat(['app.js', 'app-tu.js', 'app-nhac.js', 'app-ai.js', 'app-chuyende.js', 'app-hoc.js', 'app-viet.js']).forEach(function (f) {
+        var el = document.createElement('script');
+        el.src = f + '?v=' + (window.HSK_VERSION || '1');
+        el.async = false;
+        document.body.appendChild(el);
+      });
+    };
+    document.body.appendChild(ds);
+  })();
 </script>
 </body>
 </html>
