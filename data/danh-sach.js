@@ -1,7 +1,7 @@
 ﻿// DANH SACH FILE DU LIEU duoc nap vao ung dung (theo thu tu).
 // Khi tao them file noi dung moi (vd: data/noidung/hsk3-a.js), chi can them ten file vao day.
 // Tang so nay moi khi sua app.js / app-hoc.js / app-tu.js de trinh duyet tai ban moi.
-window.HSK_VERSION = '26';
+window.HSK_VERSION = '27';
 window.HSK_FILES = [
   "data/hsk-base.js",
   "data/nghia-en.js",
@@ -139,6 +139,10 @@ window.HSK_FILES = [
   "data/noidung/hsk79-v.js",
   "data/noidung/hsk79-w.js",
   "data/noidung/hsk79-x.js",
+  "data/noidung/hsk79-y.js",
+  "data/noidung/hsk79-z.js",
+  "data/noidung/hsk79-za.js",
+  "data/noidung/hsk79-zb.js",
   "data/chuyen-de.js",
   "data/nhan.js",
   "data/bo-sung.js"
