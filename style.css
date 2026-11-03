@@ -420,3 +420,9 @@ nav.tabs button.active { color: var(--brand-deep); }
 .idiom-goc p { margin: 0; }
 .idiom-meo p { color: var(--muted); }
 .idiom-doan .ex:last-child { border-bottom: 0; }
+
+/* ---- Chuyen tu truoc / sau trong chi tiet tu ---- */
+.wnav { display: flex; align-items: center; justify-content: center; gap: 14px; margin: -4px 40px 6px; }
+.wnav-b { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--brand); font-size: 24px; line-height: 1; cursor: pointer; }
+.wnav-b:hover:not(:disabled) { background: color-mix(in srgb, var(--brand) 10%, var(--card)); }
+.wnav-b:disabled { opacity: .3; cursor: default; }
