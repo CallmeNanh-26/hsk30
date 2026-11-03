@@ -412,3 +412,11 @@ nav.tabs button.active { color: var(--brand-deep); }
 .sv-step path.new { fill: var(--seal); }
 .sv-step path.rest { fill: var(--line); opacity: .55; }
 .sv-step text { font-size: 150px; fill: var(--muted); font-family: inherit; }
+
+/* ---- Thanh ngu: chuyen & cach dung ---- */
+.idiom-card b { display: block; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--seal); margin-bottom: 4px; }
+.idiom-card p { margin: 0 0 12px; line-height: 1.55; }
+.idiom-goc { background: color-mix(in srgb, var(--seal) 7%, transparent); border-left: 3px solid var(--seal); padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; }
+.idiom-goc p { margin: 0; }
+.idiom-meo p { color: var(--muted); }
+.idiom-doan .ex:last-child { border-bottom: 0; }
