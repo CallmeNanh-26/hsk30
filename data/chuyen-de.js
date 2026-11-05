@@ -78,7 +78,11 @@ window.HSK_COURSES = [
                 tu: '总经理 厂长 车间主任 组长 领班 员工 部门 采购部 生产部 品质部 仓库 物流部 工程部 项目部 人事部 合作 负责 汇报 上级 下级 沟通 管理',
                 on_tap: 'https://resplendent-llama-7bb513.netlify.app/'
               },
-              {},
+              {
+                ten: 'Dây chuyền sản xuất', zh: '生产线',
+                tu: '生产线 流水线 工序 工位 成品 半成品 原材料 边料 人手 组装 加工 包装 堆积 顺畅 入库 出货 回收 切割 收集 正常 分类 送 条 批 调整 抽检 恢复',
+                on_tap: 'https://deft-chaja-d730b2.netlify.app/'
+              },
               {}
             ]
           }
