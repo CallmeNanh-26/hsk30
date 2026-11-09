@@ -23,56 +23,99 @@ function aiReady() { return !!AI.fn && !AI.off; }
 
 // ---------- Gemini (khoa cua hoc vien, goi thang tu trinh duyet) ----------
 var GEM = 'https://generativelanguage.googleapis.com/v1beta/';
-function gemFetch(path, body) {
-  var key = getKey();
-  return fetch(GEM + path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: body ? JSON.stringify(body) : undefined })
-    .catch(function (e) { throw { code: 'upstream_error', message: 'network: ' + (e && e.message || '') }; })
+// Moi lan goi co gioi han thoi gian: may chu treo thi bo, chuyen sang model khac
+var GEM_TIMEOUT = 25000;
+function gemFetch(path, body, ms) {
+  var key = getKey(), ctl = window.AbortController ? new AbortController() : null;
+  var timer = ctl ? setTimeout(function () { ctl.abort(); }, ms || GEM_TIMEOUT) : 0;
+  return fetch(GEM + path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: body ? JSON.stringify(body) : undefined, signal: ctl ? ctl.signal : undefined })
+    .catch(function (e) {
+      clearTimeout(timer);
+      if (e && e.name === 'AbortError') throw { code: 'busy', message: 'timeout' };
+      throw { code: 'upstream_error', message: 'network: ' + (e && e.message || '') };
+    })
     .then(function (r) {
+      clearTimeout(timer);
       return r.json().catch(function () { return {}; }).then(function (d) {
         if (r.ok) return d;
         var msg = 'HTTP ' + r.status + ((d.error && (d.error.status || d.error.message)) ? ' – ' + (d.error.status || '') + ' ' + (d.error.message || '') : '');
         if (r.status === 429) throw { code: 'rate_limited', message: msg };
-        if (r.status === 503 || r.status === 500 || r.status === 404) throw { code: 'busy', message: msg };
+        if (r.status === 503 || r.status === 500 || r.status === 502 || r.status === 504 || r.status === 404) throw { code: 'busy', message: msg };
         if (/API key not valid|API_KEY_INVALID/i.test(msg)) throw { code: 'bad_key', message: msg };
+        if (r.status === 400 && /thinking/i.test(msg)) throw { code: 'no_thinking_cfg', message: msg };
         if (r.status === 400 || r.status === 401 || r.status === 403) throw { code: 'key_refused', message: msg };
         throw { code: 'upstream_error', message: msg };
       });
     });
 }
-// Danh sach model "flash" khoa nay dung duoc, xep uu tien (khong doan ten co dinh); model vua chay tot dung truoc
-var GEM_LIST = null;
-function gemModels() {
-  if (GEM_LIST) return Promise.resolve(GEM_LIST);
-  return gemFetch('models?pageSize=200').then(function (d) {
+// Danh sach model "flash" khoa nay dung duoc (khong doan ten co dinh), luu 1 ngay de khong phai hoi lai.
+// Xep xen ke: model flash tot nhat, model flash-lite (nhanh, it qua tai), model flash ke tiep... ; model vua chay tot dung truoc.
+var GEM_LIST = null, LIST_KEY = 'hsk30.gemlist';
+function gemSort(names) {
+  var ver = function (n) { var x = n.match(/(\d+(?:\.\d+)?)/); return x ? +x[1] : 0; };
+  var by = function (a, b) { return (/(preview|exp)/.test(a) ? 1 : 0) - (/(preview|exp)/.test(b) ? 1 : 0) || ver(b) - ver(a); };
+  names = names.filter(function (n) { return !/-\d{3}$/.test(n); }); // bo ban sao cung model (vd: -001)
+  var full = names.filter(function (n) { return !/lite/.test(n); }).sort(by), lite = names.filter(function (n) { return /lite/.test(n); }).sort(by), out = [];
+  for (var i = 0; i < Math.max(full.length, lite.length); i++) { if (full[i]) out.push(full[i]); if (lite[i]) out.push(lite[i]); }
+  return out;
+}
+function gemPrefer(list) {
+  var good = ''; try { good = localStorage.getItem('hsk30.aimodel') || ''; } catch (e) { }
+  list = list.slice();
+  if (list.indexOf(good) > 0) { list.splice(list.indexOf(good), 1); list.unshift(good); }
+  return list;
+}
+function gemModels(fresh) {
+  if (GEM_LIST && !fresh) return Promise.resolve(gemPrefer(GEM_LIST));
+  if (!fresh) {
+    try { var c = JSON.parse(localStorage.getItem(LIST_KEY) || 'null'); if (c && c.list && c.list.length && Date.now() - c.at < 86400000) { GEM_LIST = c.list; return Promise.resolve(gemPrefer(GEM_LIST)); } } catch (e) { }
+  }
+  return gemFetch('models?pageSize=200', null, 12000).then(function (d) {
     var ms = (d.models || []).filter(function (m) {
       var n = m.name || '';
       return (m.supportedGenerationMethods || []).indexOf('generateContent') >= 0 && /flash/.test(n) && !/(image|tts|audio|live|embed|vision|thinking)/.test(n);
-    });
-    var ver = function (n) { var x = n.match(/(\d+(?:\.\d+)?)/); return x ? +x[1] : 0; };
-    ms.sort(function (a, b) {
-      var pa = /(preview|exp)/.test(a.name) ? 1 : 0, pb = /(preview|exp)/.test(b.name) ? 1 : 0;
-      var la = /lite/.test(a.name) ? 1 : 0, lb = /lite/.test(b.name) ? 1 : 0;
-      return pa - pb || ver(b.name) - ver(a.name) || la - lb;
-    });
+    }).map(function (m) { return m.name.replace(/^models\//, ''); });
     if (!ms.length) throw { code: 'key_refused', message: 'Không tìm thấy model Gemini nào cho khóa này' };
-    GEM_LIST = ms.map(function (m) { return m.name.replace(/^models\//, ''); });
-    var good = ''; try { good = localStorage.getItem('hsk30.aimodel') || ''; } catch (e) { }
-    if (GEM_LIST.indexOf(good) > 0) { GEM_LIST.splice(GEM_LIST.indexOf(good), 1); GEM_LIST.unshift(good); }
-    return GEM_LIST;
+    GEM_LIST = gemSort(ms);
+    try { localStorage.setItem(LIST_KEY, JSON.stringify({ list: GEM_LIST, at: Date.now() })); } catch (e) { }
+    return gemPrefer(GEM_LIST);
   });
 }
-function gemAsk(input, json) {
+// Tat che do "suy nghi" de tra loi nhanh (Gemini 2.5: thinkingBudget 0; Gemini 3: muc thap nhat)
+var NO_THINK = {};
+function thinkCfg(m) {
+  if (NO_THINK[m]) return null;
+  if (/^gemini-2\.5/.test(m)) return { thinkingBudget: 0 };
+  if (/^gemini-[3-9]/.test(m)) return { thinkingLevel: /lite/.test(m) ? 'minimal' : 'low' };
+  return null;
+}
+// Bao tien do cho man hinh cho (vd: dang thu may chu khac)
+var gemNote = function () { };
+function gemAsk(input, json, quick) {
   var turns = typeof input === 'string' ? [{ role: 'user', content: input }] : input;
-  var body = { contents: turns.map(function (t) { return { role: t.role === 'assistant' ? 'model' : 'user', parts: [{ text: t.content }] }; }) };
-  if (json) body.generationConfig = { responseMimeType: 'application/json' };
+  var contents = turns.map(function (t) { return { role: t.role === 'assistant' ? 'model' : 'user', parts: [{ text: t.content }] }; });
+  var bodyFor = function (m) {
+    var g = {}; if (json) g.responseMimeType = 'application/json';
+    if (quick) g.maxOutputTokens = 20;
+    var th = thinkCfg(m); if (th) g.thinkingConfig = th;
+    return { contents: contents, generationConfig: g };
+  };
   return gemModels().then(function (list) {
-    // Thu lan luot toi da 4 model: model qua tai (503) hoac het luot (429) thi chuyen model khac
+    // Thu lan luot toi da 5 model; model qua tai (503), het luot (429) hoac qua 25 giay thi chuyen model khac.
+    // Het luot thu ma van qua tai: doi 3 giay roi thu lai model dau mot lan.
+    var n = Math.min(list.length, 5), again = false;
     var tryAt = function (i, lastErr) {
-      if (i >= Math.min(list.length, 4)) throw lastErr;
-      return gemFetch('models/' + list[i] + ':generateContent', body).then(function (d) {
+      if (i >= n) {
+        if (again || quick || (lastErr && lastErr.code !== 'busy')) throw lastErr;
+        again = true; gemNote('Máy chủ Google đang đông, đợi vài giây rồi thử lại…');
+        return new Promise(function (ok) { setTimeout(ok, 3000); }).then(function () { return tryAt(0, lastErr); });
+      }
+      if (i > 0) gemNote('Máy chủ bận, đang chuyển sang máy chủ khác (' + (i + 1) + '/' + n + ')…');
+      return gemFetch('models/' + list[i] + ':generateContent', bodyFor(list[i]), quick ? 10000 : GEM_TIMEOUT).then(function (d) {
         try { localStorage.setItem('hsk30.aimodel', list[i]); } catch (e) { }
         return d;
       }, function (e) {
+        if (e && e.code === 'no_thinking_cfg') { NO_THINK[list[i]] = 1; return tryAt(i, lastErr); }
         if (e && (e.code === 'busy' || e.code === 'rate_limited')) return tryAt(i + 1, e);
         throw e;
       });
@@ -80,7 +123,7 @@ function gemAsk(input, json) {
     return tryAt(0, { code: 'busy' });
   }).then(function (d) {
     var c = d.candidates && d.candidates[0];
-    var text = c && c.content && c.content.parts ? c.content.parts.map(function (p) { return p.text || ''; }).join('') : '';
+    var text = c && c.content && c.content.parts ? c.content.parts.filter(function (p) { return !p.thought; }).map(function (p) { return p.text || ''; }).join('') : '';
     if (!text) throw { code: (d.promptFeedback && d.promptFeedback.blockReason) ? 'refused' : 'empty_completion' };
     return text;
   });
@@ -95,14 +138,17 @@ geminiFn.json = function (input) {
     try { return JSON.parse(s); } catch (e) { throw { code: 'invalid_json', text: t }; }
   });
 };
+// Kiem tra khoa: lay danh sach model (1 lan goi, vai giay) roi hoi thu ngan mot cau; may chu ban van tinh la khoa dung
 function testKey(k, done) {
-  setKey(k); GEM_LIST = null; try { localStorage.removeItem('hsk30.aimodel'); } catch (e) { }
-  gemAsk('Trả lời đúng một từ: OK', false).then(function () { done(true); }, function (e) { done(false, e); });
+  setKey(k); GEM_LIST = null; NO_THINK = {};
+  try { localStorage.removeItem('hsk30.aimodel'); localStorage.removeItem(LIST_KEY); } catch (e) { }
+  gemModels(true).then(function () { return gemAsk('Trả lời đúng một từ: OK', false, true); })
+    .then(function () { done(true); }, function (e) { if (e && e.code === 'empty_completion') return done(true); done(false, e); });
 }
 
 function aiErr(e) {
   var c = e && e.code;
-  if (c === 'busy') return 'Máy chủ AI của Google đang quá tải tạm thời. Đợi 1–2 phút rồi bấm thử lại.';
+  if (c === 'busy') return 'Máy chủ AI miễn phí của Google đang quá tải (app đã tự thử nhiều máy chủ). Đợi khoảng 1 phút rồi bấm Thử lại.';
   if (c === 'key_refused') return 'Google từ chối khóa AI (' + ((e.message || '').slice(0, 120)) + '). Vào Cài đặt → Khóa AI để kiểm tra lại.';
   if (c === 'bad_key') return 'Khóa AI không dùng được (sai khóa hoặc đã bị xóa). Vào Cài đặt → Khóa AI để kiểm tra lại.';
   if (c === 'not_granted' || c === 'sampling_disabled' || c === 'not_declared' || c === 'capability_disabled' || c === 'capability_removed') {
@@ -214,7 +260,18 @@ function aiSettingsHtml() {
     (getKey() ? '✅ Máy này đã có khóa – AI chạy ngay trong tab Ôn tập.' : 'Thêm khóa để dùng Bài tập AI, Luyện hội thoại và Chấm câu ngay trong app, kể cả khi không có tài khoản Claude.') +
     '</div><button class="btn" id="keyOpen">' + (getKey() ? 'Xem / đổi khóa' : '🔑 Hướng dẫn lấy khóa miễn phí') + '</button></div>';
 }
-function aiLoading(msg) { openSheet('<div class="word-head"><div class="ai-spin">✨</div><div class="big-msg">' + esc(msg) + '</div><div class="small muted">Thường mất 10–30 giây.</div></div>'); }
+// Man hinh cho: dem giay va bao khi app dang doi may chu
+function aiLoading(msg) {
+  AI.note = ''; var t0 = Date.now();
+  openSheet('<div class="word-head"><div class="ai-spin">✨</div><div class="big-msg">' + esc(msg) + '</div><div class="small muted" id="aiStat">Thường mất 5–20 giây.</div></div>');
+  clearInterval(AI.tick);
+  AI.tick = setInterval(function () {
+    var el = $('aiStat'); if (!el || !AI.busy) return clearInterval(AI.tick);
+    var s = Math.round((Date.now() - t0) / 1000);
+    if (s >= 3) el.textContent = (AI.note || 'Đang soạn…') + ' (' + s + ' giây)';
+  }, 1000);
+}
+gemNote = function (m) { AI.note = m; var el = $('aiStat'); if (el) el.textContent = m; };
 function aiFail(msg, retry) {
   openSheet('<div class="big-msg" style="margin:8px 0 14px">' + esc(msg) + '</div><div class="row">' + (retry ? '<button class="btn primary grow" id="aiRetry">Thử lại</button>' : '') + '<button class="btn grow" data-close>Đóng</button></div>');
   if (retry && $('aiRetry')) $('aiRetry').onclick = retry;

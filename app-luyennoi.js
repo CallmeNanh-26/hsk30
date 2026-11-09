@@ -136,7 +136,7 @@ closeSheet = function () { noiRecStop(); noiClose(); };
 // ---------- AI cham ----------
 function noiCheck(q, ans) {
   if (AI.busy) return;
-  AI.busy = true; $('noiGo').disabled = true; $('noiOut').innerHTML = '<div class="small muted" style="margin-top:10px">✨ AI đang chấm…</div>';
+  AI.busy = true; AI.note = ''; $('noiGo').disabled = true; $('noiOut').innerHTML = '<div class="small muted" style="margin-top:10px" id="aiStat">✨ AI đang chấm…</div>';
   var o = BYW[q.w];
   var prompt = 'Bạn là giáo viên tiếng Trung chấm bài luyện nói của học viên người Việt. ' + CONTEXT + '\n' +
     'Cấp độ câu hỏi: ' + NOI_LV[NOI.lv].ten + ' – ' + NOI_LV[NOI.lv].ai + '.\nCâu hỏi: ' + q.q + (q.vi ? ' (' + q.vi + ')' : '') + '\n' +
@@ -161,7 +161,14 @@ function noiCheck(q, ans) {
       ((d.goiy || []).length ? '<div class="card" style="margin-top:8px"><b class="small">💡 Cách trả lời hay hơn</b>' + d.goiy.filter(function (g) { return g && g.zh; }).map(function (g) { return exHtml({ zh: g.zh, py: g.py || '', vi: g.vi || '' }); }).join('') + '</div>' : '') +
       noiNavHtml();
     noiBindNav(ans);
-  }, function (e) { AI.busy = false; if (!$('noiOut')) return; $('noiGo').disabled = false; $('noiOut').innerHTML = '<div class="feedback bad" style="margin-top:10px">' + esc(aiErr(e)) + '</div>'; });
+  }, function (e) {
+    AI.busy = false; if (!$('noiOut')) return; $('noiGo').disabled = false;
+    // AI loi: van cho xem cau mau va di tiep, khong bi ket o cau nay
+    $('noiOut').innerHTML = '<div class="feedback bad" style="margin-top:10px">' + esc(aiErr(e)) + '<div style="margin-top:8px"><button class="btn primary" id="noiRetry">↻ Thử chấm lại</button></div></div>' +
+      (q.mau ? '<div class="card" style="margin-top:8px"><b class="small">Trong lúc chờ, tham khảo câu trả lời mẫu</b>' + exHtml({ zh: q.mau, py: q.maupy || '', vi: q.mauvi || '' }) + '</div>' : '') + noiNavHtml();
+    $('noiRetry').onclick = function () { noiCheck(q, ans); };
+    noiBindNav(ans);
+  });
 }
 function noiShowSample(ans) {
   var q = NOI.qs[NOI.i];
