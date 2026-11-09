@@ -426,3 +426,34 @@ nav.tabs button.active { color: var(--brand-deep); }
 .wnav-b { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--brand); font-size: 24px; line-height: 1; cursor: pointer; }
 .wnav-b:hover:not(:disabled) { background: color-mix(in srgb, var(--brand) 10%, var(--card)); }
 .wnav-b:disabled { opacity: .3; cursor: default; }
+
+/* ---- So tay loi sai ---- */
+.err-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.err-chips .chip { font-family: var(--zh); font-size: 16px; }
+.err-n { font-family: inherit; font-size: 11px; color: var(--warn); }
+.err-row { border-top: 1px dashed var(--line); padding: 6px 0 2px; margin-top: 6px; }
+.err-item .py { color: var(--brand); }
+.linkish { background: none; border: 0; padding: 0; color: var(--brand-deep); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font: inherit; }
+
+/* ---- Luyen noi ---- */
+.noi-lv { display: grid; gap: 8px; }
+.noi-lv .btn { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+.noi-q .zh { font-size: 22px; }
+.noi-q .py { margin-top: 4px; }
+.noi-score { display: inline-block; font-weight: 700; font-size: 18px; margin-right: 6px; }
+.btn.rec.on { background: var(--warn); border-color: var(--warn); color: #fff; animation: recPulse 1.2s ease-in-out infinite; }
+@keyframes recPulse { 50% { opacity: .65; } }
+@media (prefers-reduced-motion: reduce) { .btn.rec.on { animation: none; } }
+
+/* ---- Dang nhap ---- */
+body.gated { overflow: hidden; }
+.auth-gate { position: fixed; inset: 0; z-index: 80; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+.auth-box { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 18px; text-align: center; }
+.auth-box h2 { margin: 8px 0 4px; font-size: 20px; }
+.auth-logo { display: inline-block; background: var(--brand); color: #fff; border-radius: 10px; padding: 4px 10px; font-family: var(--zh); font-size: 26px; }
+.auth-form { display: grid; gap: 8px; text-align: left; }
+.auth-form input { padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text); font-size: 16px; }
+.auth-form input:focus { outline: 2px solid var(--brand); outline-offset: 0; }
+.auth-msg { min-height: 1.4em; margin: 8px 0 2px; color: var(--warn); }
+.auth-or { margin: 6px 0; }
+.auth-links { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
