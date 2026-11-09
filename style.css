@@ -457,3 +457,18 @@ body.gated { overflow: hidden; }
 .auth-msg { min-height: 1.4em; margin: 8px 0 2px; color: var(--warn); }
 .auth-or { margin: 6px 0; }
 .auth-links { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+/* ---- Lich su bai AI + chuyen cau luyen noi ---- */
+.hist-list { display: grid; gap: 6px; }
+.hist-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; color: var(--text); font: inherit; cursor: pointer; }
+.hist-row:hover { border-color: var(--brand); }
+.hist-row .grow { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hist-ic { font-size: 20px; }
+.hist-go { color: var(--muted); font-size: 20px; }
+.hist-dang { color: var(--warn); font-weight: 600; }
+.hist-q .zh { font-size: 17px; }
+.noi-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.noi-nav .q-title { margin: 0; text-align: center; }
+.noi-dots span { cursor: pointer; height: 8px; }
+.dots span.wait { background: var(--brand-soft); animation: recPulse 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .dots span.wait { animation: none; } }

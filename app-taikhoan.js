@@ -114,6 +114,10 @@ function mergeState(c) {
   var E = S.err || {}, CE = c.err || {};
   Object.keys(CE).forEach(function (w) { if (!E[w] || CE[w].last >= E[w].last) E[w] = CE[w]; });
   S.err = E;
+  // Lich su bai AI: gop theo id, giu ban sua sau cung
+  var byId = {};
+  (S.aiHist || []).concat(c.aiHist || []).forEach(function (e) { if (e && e.id && (!byId[e.id] || (e.up || 0) > (byId[e.id].up || 0))) byId[e.id] = e; });
+  S.aiHist = Object.keys(byId).map(function (k) { return byId[k]; }).sort(function (a, b) { return (b.at || 0) - (a.at || 0); }).slice(0, 30);
   ['name', 'perDay', 'notify', 'remind'].forEach(function (k) { if (c[k] != null && c[k] !== '') S[k] = c[k]; });
 }
 function refreshAll() {
