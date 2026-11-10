@@ -100,7 +100,7 @@ function histOpen(id) {
   }
   h += '<button class="btn block ghost" id="histDel">Xóa bài này khỏi lịch sử</button></div>';
   openSheet(h);
-  $('histRedo').onclick = function () { if (e.kind === 'quiz') quizRedo(e); else noiBegin(e.lv, e.qs, e.ws || []); };
+  $('histRedo').onclick = function () { if (e.kind === 'quiz') quizRedo(e); else { noiBegin(e.lv, e.qs, e.ws || []); if (e.reflex || e.ten || e.bai) { NOI.reflex = e.reflex; NOI.ten = e.ten; NOI.bai = e.bai; histTouch(NOI); noiRender(); } } };
   $('histDel').onclick = function () {
     askConfirm('Xóa bài này khỏi lịch sử? Sổ tay lỗi sai vẫn giữ nguyên.', 'Xóa', function () {
       var H = histS(); H.splice(H.indexOf(e), 1); save(); closeSheet(); if (document.querySelector('#view-review.active')) VIEWS.review();

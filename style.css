@@ -521,3 +521,8 @@ body.gated .fab-add, body.ap-open .fab-add { display: none; }
 .bw-wrap { display: flex; gap: 14px; align-items: center; justify-content: center; margin: 6px 0 8px; flex-wrap: wrap; }
 .bw-box { width: 200px; height: 200px; border: 1px solid var(--line); border-radius: 12px; background: var(--card) linear-gradient(transparent 49.5%, var(--line) 49.5%, var(--line) 50.5%, transparent 50.5%), linear-gradient(90deg, transparent 49.5%, var(--line) 49.5%, var(--line) 50.5%, transparent 50.5%); }
 .bw-info { min-width: 120px; }
+/* Hang chon bai: xuong dong de thay du 15 bai (khong an sau thanh cuon) */
+.chips.bai-chips { flex-wrap: wrap; overflow: visible; }
+/* HSK1 theo bai: pinyin duoi cau va duoi phuong an / o xep tu */
+.bai-py { color: var(--brand); font-size: 14px; margin-top: 2px; }
+.opt[data-py]::after, .tile[data-py]::after { content: attr(data-py); display: block; font-size: 12px; color: var(--brand); font-family: system-ui, sans-serif; margin-top: 2px; }

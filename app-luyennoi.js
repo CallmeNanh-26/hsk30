@@ -177,6 +177,7 @@ function noiCheck(s, i, ans) {
   var prompt = 'Bạn là giáo viên tiếng Trung chấm bài luyện nói của học viên người Việt. ' + CONTEXT + '\n' +
     'Cấp độ câu hỏi: ' + NOI_LV[s.lv].ten + ' – ' + NOI_LV[s.lv].ai + '.\nCâu hỏi: ' + q.q + (q.vi ? ' (' + q.vi + ')' : '') + '\n' +
     (o ? 'Từ cần luyện: ' + o.w + ' (' + o.py + '): ' + meaning(o) + '\n' : '') +
+    (s.bai && window.baiScopeText ? 'Học viên mới học giáo trình HSK1 đến bài ' + s.bai + '. Câu "sua" và "goiy" CHỈ được dùng các từ sau (và tên riêng), không dùng từ hay ngữ pháp ngoài phạm vi này: ' + baiScopeText(s.bai) + '\nCâu trả lời mẫu tham khảo: ' + (q.mau || '') + '\n' : '') +
     'Câu trả lời của học viên: ' + ans + '\n\n' + gradeRules(!!(s.voice && s.voice[i])) +
     'Chấm điểm theo: trả lời đúng ý câu hỏi, dùng từ đúng và tự nhiên, đúng ngữ pháp, độ đầy đủ so với cấp độ.\n' +
     'Trả về DUY NHẤT JSON: {"diem":0-10,"dungy":true/false,"nhanxet":"nhận xét ngắn, động viên, bằng tiếng Việt",' + LOI_JSON + ',"sua":{"zh":"câu trả lời của học viên sau khi sửa, giữ ý của học viên","py":"pinyin","vi":"nghĩa"},"goiy":[{"zh":"cách trả lời tự nhiên hoặc hay hơn, đúng trình độ","py":"pinyin","vi":"nghĩa"}]}\n' +

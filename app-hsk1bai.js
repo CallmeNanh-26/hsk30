@@ -80,54 +80,118 @@ document.addEventListener('click', function (e) {
   baiQuiz(n, k);
 });
 
-// ---------- Bai tap Nghe / Doc hieu / Dich ----------
+// ---------- Noi dung bai tap: chi dung tu cua bai do va cac bai truoc (data/hsk1-baitap.js) ----------
+var BT = {}; // BT[n] = { c: [cau vi du], q: [hoi-dap] }
+var BT_PUN = /[，。？！、：；,.?!:;\s]/g;
+var BT_NAMES = ['王一飞', '白家月', '安妮', '陈天中', '李文', '王一雪', '刘明', '刘小雪', '刘小明', '杨同乐', '小语'];
+(function () {
+  var n = 0;
+  String(window.HSK1_BT || '').split('\n').forEach(function (l) {
+    if (/^# \d+/.test(l)) { n = +l.slice(2); BT[n] = { c: [], q: [] }; return; }
+    var f = l.split('|'); if (!n) return;
+    if (f[0] === 'c' && f.length >= 4) {
+      var tk = f[1].split('/'), py = f[2].split('/');
+      BT[n].c.push({ zh: tk.join(''), py: btPyJoin(py), vi: f[3], tk: tk, tpy: py, n: n });
+    } else if (f[0] === 'q' && f.length >= 8) BT[n].q.push({ g: f[1], q: f[2], qpy: f[3], qvi: f[4], a: f[5], apy: f[6], avi: f[7], n: n });
+  });
+})();
+function btPyJoin(a) { return a.join(' ').replace(/ ([,.?!:])/g, '$1'); }
+// Tu duoc phep o bai n: tu cua bai 1..n + ten rieng
+function btLv(w) { var ns = BAI.of[w]; return ns ? Math.min.apply(null, ns) : 99; }
+function btScope(n) { return Object.keys(BAI.of).filter(function (w) { return btLv(w) <= n && BYW[w]; }); }
+function btNames(n) {
+  var out = BT_NAMES.slice(), T = window.HSK1_TEN || {};
+  Object.keys(T).forEach(function (k) { if (+k <= n) out = out.concat(T[k]); });
+  return out;
+}
+function btC(n) { return (BT[n] && BT[n].c) || []; }
+function btQ(n) { return (BT[n] && BT[n].q) || []; }
+function btUpTo(n, key) { var out = []; for (var k = 1; k <= n; k++) if (BT[k]) out = out.concat(BT[k][key]); return out; }
+// Tu chinh cua cau (de ghi so loi): tu dau tien thuoc bai n
+function btWordOf(c) { var n = c.n; for (var i = 0; i < c.tk.length; i++) { var t = c.tk[i].replace(BT_PUN, ''); if (BYW[t] && (BAI.of[t] || []).indexOf(n) >= 0) return t; } return ''; }
+function btZhPy(zh, py) { return '<span class="zh">' + esc(zh) + '</span><div class="py bai-py">' + esc(py) + '</div>'; }
+function btSay(zh, txt) { return '<button class="speak big-say" data-say="' + esc(zh) + '">🔊 ' + (txt || 'Nghe') + '</button> <button class="speak" data-say="' + esc(zh) + '" data-slow="1">🐢</button>'; }
 function pick(a, n, not) { return shuffle(a.filter(function (x) { return not.indexOf(x) < 0; })).slice(0, n); }
-function exOf(o) { return (o.ex || []).filter(function (x) { return x.zh && x.vi; }); }
-// Phuong an nhieu: uu tien tu cung bai, thieu thi lay tu HSK 1 khac
-function baiPool(n, w) { var ws = baiWords(n).filter(function (x) { return x !== w; }); return ws.length >= 6 ? ws : ws.concat(WORDS.filter(function (o) { return o.lv === 1 && o.w !== w; }).map(function (o) { return o.w; })); }
+// Phuong an nhieu cho cau hoi ve tu: uu tien tu cung bai, thieu thi lay tu bai truoc (khong lay tu bai sau)
+function baiPool(n, w) {
+  var ws = baiWords(n).filter(function (x) { return x !== w && meaning(BYW[x]) !== meaning(BYW[w]); });
+  return ws.length >= 6 ? ws : ws.concat(btScope(n - 1).filter(function (x) { return x !== w && ws.indexOf(x) < 0; }));
+}
+function btPyMap(list) { var m = {}; list.forEach(function (x) { m[x[0]] = x[1]; }); return m; }
+
 function qNgheTu(n, o) {
   var opts = shuffle([o.w].concat(pick(baiPool(n, o.w), 3, [o.w])));
-  return { t: 'Nghe và chọn từ đúng', p: '<button class="speak big-say" data-say="' + esc(o.w) + '">🔊 Nghe</button> <button class="speak" data-say="' + esc(o.w) + '" data-slow="1">🐢</button>', opts: opts, a: o.w, zh: 1, say: o.w, after: o.w + ' – ' + o.py + ' – ' + meaning(o), w: o.w };
+  return { t: 'Nghe và chọn từ đúng', p: btSay(o.w), opts: opts, a: o.w, zh: 1, say: o.w, optPy: btPyMap(opts.map(function (w) { return [w, BYW[w].py]; })), after: o.w + ' – ' + o.py + ' – ' + meaning(o), w: o.w };
 }
 function qNgheNghia(n, o) {
   var opts = shuffle([meaning(o)].concat(pick(baiPool(n, o.w), 3, [o.w]).map(function (w) { return meaning(BYW[w]); })));
-  return { t: 'Nghe và chọn nghĩa đúng', p: '<button class="speak big-say" data-say="' + esc(o.w) + '">🔊 Nghe</button> <button class="speak" data-say="' + esc(o.w) + '" data-slow="1">🐢</button>', opts: opts, a: meaning(o), say: o.w, after: o.w + ' – ' + o.py, w: o.w };
+  return { t: 'Nghe và chọn nghĩa đúng', p: btSay(o.w), opts: opts, a: meaning(o), say: o.w, after: o.w + ' – ' + o.py, w: o.w };
 }
-// Cau: nghe (hoac doc) mot cau vi du, chon nghia dung trong 4 cau
-function qCau(n, o, listen) {
-  var e = exOf(o)[0]; if (!e) return null;
+// 3 nghia sai: cau khac cung bai, thieu thi lay o bai truoc
+function btOtherVi(n, c) {
+  var out = [];
+  shuffle(btC(n)).concat(shuffle(btUpTo(n - 1, 'c'))).some(function (x) { if (x !== c && x.vi !== c.vi && out.indexOf(x.vi) < 0) out.push(x.vi); return out.length >= 3; });
+  return out.length >= 3 ? out : null;
+}
+function qCau(n, c, listen) {
+  var others = btOtherVi(n, c); if (!others) return null;
+  return {
+    t: listen ? 'Nghe câu và chọn nghĩa đúng' : 'Đọc câu và chọn nghĩa đúng',
+    p: listen ? btSay(c.zh, 'Nghe câu') : btZhPy(c.zh, c.py) + ' <button class="mini-speak" data-say="' + esc(c.zh) + '">🔊</button>',
+    opts: shuffle([c.vi].concat(others)), a: c.vi, say: listen ? c.zh : '', after: c.zh + ' – ' + c.py, w: btWordOf(c)
+  };
+}
+// Hoi dap: chon cau tra loi phu hop (cau tra loi sai lay tu cau hoi khac nhom, cung bai hoac bai truoc)
+function qHoiDap(n, x, listen) {
   var others = [];
-  shuffle(baiPool(n, o.w)).some(function (w) { var x = exOf(BYW[w])[0]; if (x && x.vi !== e.vi && others.indexOf(x.vi) < 0) others.push(x.vi); return others.length >= 3; });
+  shuffle(btQ(n)).concat(shuffle(btUpTo(n - 1, 'q'))).some(function (y) {
+    if (y !== x && y.a !== x.a && !(x.g && y.g === x.g) && !others.some(function (o) { return o.a === y.a; })) others.push(y);
+    return others.length >= 3;
+  });
   if (others.length < 3) return null;
-  return listen ?
-    { t: 'Nghe câu và chọn nghĩa đúng', p: '<button class="speak big-say" data-say="' + esc(e.zh) + '">🔊 Nghe câu</button> <button class="speak" data-say="' + esc(e.zh) + '" data-slow="1">🐢</button>', opts: shuffle([e.vi].concat(others)), a: e.vi, say: e.zh, after: e.zh + ' – ' + e.py, w: o.w } :
-    { t: 'Đọc câu và chọn nghĩa đúng', p: '<span class="zh">' + esc(e.zh) + '</span>', opts: shuffle([e.vi].concat(others)), a: e.vi, after: e.zh + ' – ' + e.py, w: o.w };
+  var all = [x].concat(others);
+  return {
+    t: listen ? 'Nghe câu hỏi và chọn câu trả lời phù hợp' : 'Đọc câu hỏi và chọn câu trả lời phù hợp',
+    p: listen ? btSay(x.q, 'Nghe câu hỏi') : btZhPy(x.q, x.qpy) + ' <button class="mini-speak" data-say="' + esc(x.q) + '">🔊</button>',
+    opts: shuffle(all.map(function (y) { return y.a; })), a: x.a, zh: 1, say: listen ? x.q : '',
+    optPy: btPyMap(all.map(function (y) { return [y.a, y.apy]; })),
+    after: x.q + ' → ' + x.a + '\n' + x.qpy + ' → ' + x.apy + '\n(' + x.qvi + ' → ' + x.avi + ')'
+  };
 }
-// Hoi dap: doc cau hoi, chon cau tra loi phu hop (cac cau tra loi khac lay tu cung bai)
-function qHoiDap(n, o) {
-  if (!o.qa) return null;
-  var others = pick(baiPool(n, o.w), 6, []).map(function (w) { return BYW[w].qa && BYW[w].qa.a; }).filter(function (a) { return a && a !== o.qa.a; }).slice(0, 3);
-  if (others.length < 3) return null;
-  return { t: 'Đọc câu hỏi và chọn câu trả lời phù hợp', p: '<span class="zh">' + esc(o.qa.q) + '</span>', opts: shuffle([o.qa.a].concat(others)), a: o.qa.a, zh: 1, after: o.qa.q + ' → ' + o.qa.a + (o.qa.qvi ? '\n(' + o.qa.qvi + ')' : ''), w: o.w };
+// Dien tu: bo trong mot tu cua bai n trong cau, co nghia tieng Viet de khong mo ho
+function qDien(n, c) {
+  var idx = c.tk.map(function (t, i) { return i; }).filter(function (i) { var t = c.tk[i].replace(BT_PUN, ''); return BYW[t] && (BAI.of[t] || []).indexOf(n) >= 0; });
+  if (!idx.length) return null;
+  var i = idx[Math.floor(Math.random() * idx.length)], w = c.tk[i].replace(BT_PUN, '');
+  var wrong = pick(baiPool(n, w), 3, [w].concat(c.tk.map(function (t) { return t.replace(BT_PUN, ''); })));
+  if (wrong.length < 3) return null;
+  var zh = c.tk.map(function (t, k) { return k === i ? t.replace(w, '＿＿') : t; }).join('');
+  var py = btPyJoin(c.tpy.map(function (p, k) { return k === i ? p.replace(/[^,.?!:]+/, '＿＿') : p; }));
+  var opts = shuffle([w].concat(wrong));
+  return { t: 'Chọn từ điền vào chỗ trống', p: btZhPy(zh, py) + '<div class="small muted">' + esc(c.vi) + '</div>', opts: opts, a: w, zh: 1, optPy: btPyMap(opts.map(function (x) { return [x, BYW[x].py]; })), after: c.zh + ' – ' + c.py, w: w };
 }
-function qDichVT(o) {
-  var e = exOf(o)[1] || exOf(o)[0]; if (!e) return null;
-  var sg = segment(e.zh); if (sg.tiles.length < 3) return null;
-  return { t: 'Dịch sang tiếng Trung: sắp xếp các từ', p: esc(e.vi), tiles: shuffle(sg.tiles), a: sg.answer, after: e.zh + ' – ' + e.py, w: o.w };
+// Sap xep tu thanh cau (moi o co pinyin)
+function qXep(n, c) {
+  var tk = [], py = [];
+  c.tk.forEach(function (t, k) { var z = t.replace(BT_PUN, ''); if (z) { tk.push(z); py.push(c.tpy[k].replace(/[,.?!:]/g, '')); } });
+  if (tk.length < 3) return null;
+  while (tk.length > 8) { var j = Math.floor(Math.random() * (tk.length - 1)); tk.splice(j, 2, tk[j] + tk[j + 1]); py.splice(j, 2, py[j] + ' ' + py[j + 1]); }
+  var ord = shuffle(tk.map(function (_, k) { return k; }));
+  return { t: 'Dịch sang tiếng Trung: sắp xếp các từ', p: esc(c.vi), tiles: ord.map(function (k) { return tk[k]; }), tilePy: ord.map(function (k) { return py[k]; }), a: tk.join(''), after: c.zh + ' – ' + c.py, w: btWordOf(c) };
 }
-function qDichTV(n, o) {
-  var e = exOf(o)[1] || exOf(o)[0]; if (!e) return null;
-  var q = qCau(n, Object.assign({}, o, { ex: [e] }), false); if (q) q.t = 'Dịch sang tiếng Việt: chọn câu dịch đúng';
-  return q;
-}
+function qDichTV(n, c) { var q = qCau(n, c, false); if (q) q.t = 'Dịch sang tiếng Việt: chọn câu dịch đúng'; return q; }
+
 var BAI_KIND = {
-  nghe: { ten: 'Nghe', make: function (n, o, k) { return k % 3 === 2 ? qCau(n, o, true) || qNgheTu(n, o) : k % 3 === 1 ? qNgheNghia(n, o) : qNgheTu(n, o); } },
-  doc: { ten: 'Đọc hiểu', make: function (n, o, k) { return k % 3 === 0 ? qCau(n, o, false) : k % 3 === 1 ? qHoiDap(n, o) || qCau(n, o, false) : (typesFor(o).indexOf('fill') >= 0 ? Object.assign(makeQ(o, 'fill'), { w: o.w }) : qCau(n, o, false)); } },
-  dich: { ten: 'Dịch', make: function (n, o, k) { return k % 2 === 0 ? qDichVT(o) || qDichTV(n, o) : qDichTV(n, o) || qDichVT(o); } }
+  nghe: { ten: 'Nghe', make: function (n, k, w, c, x) { return [qNgheTu(n, BYW[w]), qNgheNghia(n, BYW[w]), qCau(n, c, true), x && qHoiDap(n, x, true)][k % 4]; } },
+  doc: { ten: 'Đọc hiểu', make: function (n, k, w, c, x) { return [qCau(n, c, false), x && qHoiDap(n, x, false), qDien(n, c)][k % 3]; } },
+  dich: { ten: 'Dịch', make: function (n, k, w, c, x) { return k % 2 === 0 ? qXep(n, c) || qDichTV(n, c) : qDichTV(n, c) || qXep(n, c); } }
 };
 function baiQuiz(n, kind) {
-  var K = BAI_KIND[kind], ws = shuffle(baiWords(n)), qs = [];
-  for (var i = 0; i < ws.length && qs.length < 8; i++) { var q = K.make(n, BYW[ws[i]], qs.length); if (q) qs.push(q); }
+  var K = BAI_KIND[kind], ws = shuffle(baiWords(n)), cs = shuffle(btC(n)), xs = shuffle(btQ(n)), qs = [];
+  for (var k = 0, tries = 0; qs.length < 8 && tries < 40; tries++) {
+    var q = K.make(n, k, ws[k % ws.length], cs[k % cs.length], xs[k % xs.length]);
+    k++; if (q) qs.push(q);
+  }
   if (qs.length < 3) return toast('Bài này chưa đủ câu cho dạng ' + K.ten + '.');
   QZ = { qs: qs, i: 0, res: [], ws: ws, mode: 'bai:' + n + ':' + kind };
   renderQ();
@@ -138,20 +202,43 @@ startQuiz = function (ws, mode) { var m = /^bai:(\d+):(\w+)$/.exec(mode || ''); 
 var baiRenderQ = renderQ;
 renderQ = function () {
   baiRenderQ();
-  var m = QZ && /^bai:(\d+):(\w+)$/.exec(QZ.mode || ''), t = $('sheet').querySelector('.q-title');
+  var q = QZ && QZ.qs[QZ.i], m = QZ && /^bai:(\d+):(\w+)$/.exec(QZ.mode || ''), t = $('sheet').querySelector('.q-title');
   if (m && t && t.textContent.indexOf('Bài ') < 0) t.insertAdjacentHTML('afterbegin', '<b>Bài ' + m[1] + ' · ' + BAI_KIND[m[2]].ten + '</b> · ');
+  if (!q) return;
+  // Pinyin hien bang data-py (CSS ::after) de khong lan vao noi dung dap an
+  if (q.optPy) $('sheet').querySelectorAll('.opt').forEach(function (b) { var p = q.optPy[b.dataset.v]; if (p) b.setAttribute('data-py', p); });
+  if (q.tilePy) {
+    $('tiles').querySelectorAll('.tile').forEach(function (b) { b.setAttribute('data-py', q.tilePy[+b.dataset.k] || ''); });
+    var put = function () { $('ans').querySelectorAll('.tile:not([data-py])').forEach(function (b) { var k = q.tiles.indexOf(b.textContent); if (k >= 0) b.setAttribute('data-py', q.tilePy[k]); }); };
+    new MutationObserver(put).observe($('ans'), { childList: true });
+  }
 };
 
 // ---------- Phan xa: nghe cau hoi, tra loi nhanh bang tieng Trung (noi hoac go) ----------
+// Tach cau thanh tu trong pham vi bai (de goi y tu)
+function btSeg(s, n) {
+  var ok = btNames(n), sc = {}; btScope(n).forEach(function (w) { sc[w] = 1; });
+  s = s.replace(BT_PUN, ''); var out = [];
+  for (var i = 0; i < s.length;) {
+    var got = 1;
+    for (var L = Math.min(6, s.length - i); L > 1; L--) { var x = s.substr(i, L); if (sc[x] || ok.indexOf(x) >= 0) { got = L; break; } }
+    out.push(s.substr(i, got)); i += got;
+  }
+  return out;
+}
 function baiReflex(n) {
-  var qs = shuffle(baiWords(n).filter(function (w) { return BYW[w].qa; })).slice(0, 6).map(function (w) {
-    var o = BYW[w];
-    return { w: w, q: o.qa.q, py: '', vi: o.qa.qvi, goiy: 'Trả lời ngắn, nhanh, dùng từ ' + w + ' (' + meaning(o) + ').', tu: noiHintWords(w, o.qa.a), mau: o.qa.a, maupy: '', mauvi: '' };
+  var qs = shuffle(btQ(n)).slice(0, 6).map(function (x) {
+    var tu = [];
+    btSeg(x.a, n).forEach(function (t) { var o = BYW[t]; if (o && (BAI.of[t] || []).indexOf(n) >= 0 && !tu.some(function (u) { return u.zh === t; })) tu.push({ zh: t, py: o.py, vi: meaning(o) }); });
+    return { w: '', q: x.q, py: x.qpy, vi: x.qvi, goiy: 'Trả lời ngắn, nhanh, chỉ dùng từ đã học đến bài ' + n + '. Ý câu trả lời: ' + x.avi, tu: tu.slice(0, 4), mau: x.a, maupy: x.apy, mauvi: x.avi };
   });
   if (qs.length < 2) return toast('Bài này chưa đủ câu hỏi phản xạ.');
+  NOI_UI.showPy = true;
   noiBegin(0, qs, baiWords(n));
-  NOI.reflex = 15; NOI.ten = 'Bài ' + n + ' · Phản xạ'; histTouch(NOI); noiRender();
+  NOI.reflex = 15; NOI.ten = 'Bài ' + n + ' · Phản xạ'; NOI.bai = n; histTouch(NOI); noiRender();
 }
+// Danh sach tu cho AI cham phan xa: sua va goi y chi duoc dung tu nay
+function baiScopeText(n) { return btScope(n).concat(btNames(n)).join('、'); }
 
 // ---------- Viet chu Han: tung chu trong bai, xem thu tu net roi tu viet ----------
 var BW = { cs: [], i: 0, n: 0, miss: {}, writer: null };
