@@ -100,7 +100,7 @@ function noiRender(quiet) {
     return '<span class="' + c + '" data-noii="' + k + '" title="Câu ' + (k + 1) + '"></span>';
   }).join('') + '</div>';
   var h = dots + '<div class="noi-nav"><button class="wnav-b" data-noigo="-1"' + (i <= 0 ? ' disabled' : '') + ' aria-label="Câu trước">‹</button>' +
-    '<div class="q-title grow">🎤 Câu ' + (i + 1) + '/' + n + ' · Cấp ' + NOI_LV[s.lv].ten + '</div>' +
+    '<div class="q-title grow">🎤 Câu ' + (i + 1) + '/' + n + ' · ' + (s.ten ? esc(s.ten) : 'Cấp ' + NOI_LV[s.lv].ten) + '</div>' + (s.reflex && !g && !pend ? '<div class="noi-timer" id="noiTimer"><i></i><span></span></div>' : '') +
     '<button class="wnav-b" data-noigo="1"' + (i >= n - 1 ? ' disabled' : '') + ' aria-label="Câu sau">›</button></div>' +
     '<div class="q-prompt noi-q"><span class="zh">' + esc(q.q) + '</span> <button class="mini-speak" data-say="' + esc(q.q) + '">🔊</button> <button class="mini-speak" data-say="' + esc(q.q) + '" data-slow="1">🐢</button>' +
     (q.py ? '<div class="py noi-py"' + (NOI_UI.showPy ? '' : ' hidden') + '>' + esc(q.py) + '</div>' : '') +
@@ -113,6 +113,7 @@ function noiRender(quiet) {
     '<div class="small muted" id="noiRecMsg" style="margin-top:4px"></div><div id="noiOut">' + noiOutHtml(s, i) + '</div>';
   openSheet(h);
   if (!quiet && !g && !pend) setTimeout(function () { speak(q.q); }, 250);
+  if (s.reflex && !g && !pend) noiTimer(s, i);
   if ($('noiPy')) $('noiPy').onclick = function () { NOI_UI.showPy = !NOI_UI.showPy; $('sheet').querySelector('.noi-py').hidden = !NOI_UI.showPy; };
   $('noiVi').onclick = function () { var v = $('sheet').querySelector('.noi-vi'); v.hidden = !v.hidden; };
   if ($('noiHint')) $('noiHint').onclick = function () { var v = $('sheet').querySelector('.noi-hint'); v.hidden = !v.hidden; };
@@ -246,4 +247,19 @@ function noiHintHtml(q) {
     (tu.length ? '<div class="small muted" style="margin-top:6px">Từ nên dùng trong câu trả lời:</div><div class="noi-tu">' + tu.map(function (t) {
       return '<button class="noi-tu-b" data-say="' + esc(t.zh) + '"><span class="zh">' + esc(t.zh) + '</span><span class="py">' + esc(t.py) + '</span><span class="small">' + esc(t.vi) + '</span></button>';
     }).join('') + '</div>' : '') + '</div>';
+}
+
+// Phan xa: dong ho dem nguoc de tap tra loi nhanh (het gio van tra loi tiep duoc)
+function noiTimer(s, i) {
+  var left = s.reflex, el = $('noiTimer'); if (!el) return;
+  var draw = function () {
+    el.querySelector('i').style.width = Math.max(0, left / s.reflex * 100) + '%';
+    el.querySelector('span').textContent = left > 0 ? '⏱ ' + left + ' giây' : '⏰ Hết giờ! Cứ trả lời xong rồi bấm Chấm bài.';
+    el.classList.toggle('late', left <= 0);
+  };
+  draw();
+  var t = setInterval(function () {
+    if (NOI !== s || s.i !== i || !$('noiTimer') || s.grade[i] || NOI_PEND[noiKey(s, i)]) return clearInterval(t);
+    left--; draw(); if (left <= 0) clearInterval(t);
+  }, 1000);
 }

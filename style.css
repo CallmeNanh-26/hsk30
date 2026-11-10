@@ -500,3 +500,24 @@ body.gated .fab-add, body.ap-open .fab-add { display: none; }
 .err-form { display: grid; gap: 10px; }
 .err-form label { display: grid; gap: 4px; }
 .err-form input { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text); font-size: 16px; }
+
+/* ---- HSK 1 theo bai ---- */
+.bai-chips[hidden] { display: none; }
+.bai-chips .chip { padding: 6px 11px; }
+.bai-card .bai-title { margin-top: 4px; }
+.bai-card .bai-title .zh { font-size: 24px; }
+.bai-ngu { margin: 8px 0 4px; background: var(--brand-soft); border-radius: 8px; padding: 6px 9px; }
+.bai-prog { display: flex; align-items: center; gap: 10px; margin: 8px 0 10px; }
+.bai-prog .bar { flex: 1; height: 6px; border-radius: 3px; background: var(--chip); overflow: hidden; }
+.bai-prog .bar i { display: block; height: 100%; background: var(--ok); }
+.bai-acts { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.bai-old { background: var(--chip); color: var(--muted); }
+.big-say { font-size: 20px; padding: 10px 18px; }
+.noi-nav { flex-wrap: wrap; }
+.noi-timer { order: 3; flex-basis: 100%; position: relative; height: 22px; border-radius: 11px; background: var(--chip); overflow: hidden; }
+.noi-timer i { position: absolute; inset: 0 auto 0 0; background: var(--brand-soft); transition: width 1s linear; }
+.noi-timer span { position: relative; display: block; text-align: center; font-size: 12px; line-height: 22px; font-weight: 600; }
+.noi-timer.late span { color: var(--warn); }
+.bw-wrap { display: flex; gap: 14px; align-items: center; justify-content: center; margin: 6px 0 8px; flex-wrap: wrap; }
+.bw-box { width: 200px; height: 200px; border: 1px solid var(--line); border-radius: 12px; background: var(--card) linear-gradient(transparent 49.5%, var(--line) 49.5%, var(--line) 50.5%, transparent 50.5%), linear-gradient(90deg, transparent 49.5%, var(--line) 49.5%, var(--line) 50.5%, transparent 50.5%); }
+.bw-info { min-width: 120px; }

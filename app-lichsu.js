@@ -43,7 +43,7 @@ function histInfo(e) {
     return { icon: '📝', ten: AI_QUIZ_MODES[e.mode] || 'Bài tập AI', sub: n + ' câu', diem: got.length ? ok + '/' + got.length + ' đúng' : '', dang: got.length < n, lam: got.length };
   }
   var g = e.res.filter(function (x) { return x != null; }), avg = g.length ? Math.round(g.reduce(function (a, b) { return a + b; }, 0) / g.length * 10) / 10 : null;
-  return { icon: '🎤', ten: 'Luyện nói · cấp ' + NOI_LV[e.lv].ten, sub: n + ' câu', diem: avg != null ? 'TB ' + avg + '/10' : '', dang: !e.done && g.length < n, lam: g.length };
+  return { icon: e.reflex ? '⚡' : '🎤', ten: e.ten || 'Luyện nói · cấp ' + NOI_LV[e.lv].ten, sub: n + ' câu', diem: avg != null ? 'TB ' + avg + '/10' : '', dang: !e.done && g.length < n, lam: g.length };
 }
 function histRowHtml(e) {
   var f = histInfo(e);
