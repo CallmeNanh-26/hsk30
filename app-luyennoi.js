@@ -42,13 +42,21 @@ VIEWS.chuyende = function () {
 };
 
 // ---------- Lay cau hoi ----------
+// Tu goi y cho cau hoi co san: tu can luyen + cac tu dang hoc trong cau mau (bo tu qua co ban)
+function noiHintWords(w, mau) {
+  var out = [w];
+  if (mau) segment(mau).tiles.forEach(function (t) {
+    var o = BYW[t]; if (o && out.indexOf(t) < 0 && t.length > 1 && (typeof o.lv !== 'number' || o.lv === 0 || o.lv >= 3 || o.tags.length)) out.push(t);
+  });
+  return out.slice(0, 4).map(function (t) { var o = BYW[t]; return { zh: t, py: o ? o.py : '', vi: o ? meaning(o) : '' }; });
+}
 function noiStart(lv, ws) {
   if (AI.busy) return;
   ws = shuffle(ws.filter(function (w) { return BYW[w]; }));
   // Cap De: dung cau hoi co san trong du lieu tu; thieu thi nho AI
   if (lv === 0) {
     var qs = ws.filter(function (w) { return BYW[w].qa; }).slice(0, 5).map(function (w) {
-      var o = BYW[w]; return { w: w, q: o.qa.q, py: '', vi: o.qa.qvi, goiy: 'Dùng từ ' + w + ' (' + meaning(o) + ').', mau: o.qa.a, maupy: '', mauvi: '' };
+      var o = BYW[w]; return { w: w, q: o.qa.q, py: '', vi: o.qa.qvi, goiy: 'Trả lời đúng ý câu hỏi, cố gắng dùng từ ' + w + ' (' + meaning(o) + ').', tu: noiHintWords(w, o.qa.a), mau: o.qa.a, maupy: '', mauvi: '' };
     });
     if (qs.length >= 3 || !aiReady()) {
       if (!qs.length) return toast('Các từ này chưa có câu hỏi mẫu. Hãy thêm khóa AI để AI soạn câu hỏi.');
@@ -64,11 +72,13 @@ function noiStart(lv, ws) {
   var prompt = 'Bạn là giáo viên tiếng Trung luyện nói cho học viên người Việt. ' + CONTEXT + '\nTrình độ: khoảng ' + lvHint(os) + ' (câu hỏi có thể khó hơn một chút).\n' +
     'Các từ cần luyện:\n' + wordList(os) + '\n\n' +
     'Hãy soạn đúng 5 câu hỏi bằng tiếng Trung, mỗi câu gắn với một từ trong danh sách. Cấp độ: ' + NOI_LV[lv].ai + '. Câu hỏi phải tự nhiên, đúng ngữ pháp, giống câu người Trung Quốc thật sự hỏi trong công việc.\n' +
-    'Trả về DUY NHẤT JSON {"qs":[{"word":"từ được luyện","q":"câu hỏi tiếng Trung","py":"pinyin câu hỏi","vi":"nghĩa tiếng Việt","goiy":"gợi ý ngắn bằng tiếng Việt nên trả lời ý gì","mau":"một câu trả lời mẫu tiếng Trung đúng cấp độ","maupy":"pinyin câu mẫu","mauvi":"nghĩa câu mẫu"}]}. Không dùng dấu | trong nội dung.';
+    'Với mỗi câu, soạn phần gợi ý để học viên có ý tưởng trả lời và chủ động dùng từ cần học: "goiy" là gợi ý bằng tiếng Việt nên trả lời những ý gì (1–2 câu ngắn, không viết sẵn câu tiếng Trung); "tu" là 3–5 từ/cụm từ tiếng Trung mong học viên dùng (luôn có từ được luyện, thêm cụm từ hay kết hợp với nó, liên từ hợp với cấp độ), mỗi từ kèm pinyin và nghĩa tiếng Việt.\n' +
+    'Trả về DUY NHẤT JSON {"qs":[{"word":"từ được luyện","q":"câu hỏi tiếng Trung","py":"pinyin câu hỏi","vi":"nghĩa tiếng Việt","goiy":"gợi ý ý trả lời bằng tiếng Việt","tu":[{"zh":"từ","py":"pinyin","vi":"nghĩa tiếng Việt"}],"mau":"một câu trả lời mẫu tiếng Trung đúng cấp độ, có dùng các từ trong tu","maupy":"pinyin câu mẫu","mauvi":"nghĩa câu mẫu"}]}. Không dùng dấu | trong nội dung.';
   AI.fn.json(prompt, { modelTier: 'default', cache: false }).then(function (d) {
     AI.busy = false;
     var qs = ((d && d.qs) || []).filter(function (x) { return x && x.q; }).map(function (x) {
-      return { w: BYW[x.word] ? x.word : '', q: String(x.q), py: x.py || '', vi: x.vi || '', goiy: x.goiy || '', mau: x.mau || '', maupy: x.maupy || '', mauvi: x.mauvi || '' };
+      var tu = (x.tu || []).filter(function (t) { return t && t.zh; }).slice(0, 5).map(function (t) { return { zh: String(t.zh), py: t.py || '', vi: t.vi || '' }; });
+      return { w: BYW[x.word] ? x.word : '', q: String(x.q), py: x.py || '', vi: x.vi || '', goiy: x.goiy || '', tu: tu, mau: x.mau || '', maupy: x.maupy || '', mauvi: x.mauvi || '' };
     });
     if (qs.length < 2) return aiFail('AI chưa soạn được câu hỏi, thử lại nhé.', function () { noiStart(lv, ws); });
     noiBegin(lv, qs, ws);
@@ -95,8 +105,8 @@ function noiRender(quiet) {
     '<div class="q-prompt noi-q"><span class="zh">' + esc(q.q) + '</span> <button class="mini-speak" data-say="' + esc(q.q) + '">🔊</button> <button class="mini-speak" data-say="' + esc(q.q) + '" data-slow="1">🐢</button>' +
     (q.py ? '<div class="py noi-py"' + (NOI_UI.showPy ? '' : ' hidden') + '>' + esc(q.py) + '</div>' : '') +
     '<div class="small muted noi-vi" hidden>' + esc(q.vi) + '</div></div>' +
-    '<div class="row small" style="margin-bottom:8px">' + (q.py ? '<button class="btn ghost" id="noiPy">Pinyin</button>' : '') + '<button class="btn ghost" id="noiVi">Nghĩa</button>' + (q.goiy ? '<button class="btn ghost" id="noiHint">💡 Gợi ý</button>' : '') + '</div>' +
-    '<div class="small noi-hint" hidden>💡 ' + esc(q.goiy) + '</div>' +
+    '<div class="row small" style="margin-bottom:8px">' + (q.py ? '<button class="btn ghost" id="noiPy">Pinyin</button>' : '') + '<button class="btn ghost" id="noiVi">Nghĩa</button>' + (q.goiy || (q.tu && q.tu.length) ? '<button class="btn ghost" id="noiHint">💡 Gợi ý</button>' : '') + '</div>' +
+    noiHintHtml(q) +
     '<textarea id="noiIn" class="note" placeholder="Gõ câu trả lời bằng tiếng Trung, hoặc bấm 🎤 để nói…">' + esc(s.ans[i] || '') + '</textarea>' +
     '<div class="row" style="margin-top:8px"><button class="btn rec" id="noiRec">🎤 Ghi âm</button><button class="btn primary grow" id="noiGo"' + (pend ? ' disabled' : '') + '>' +
     (!aiReady() ? 'Xem câu mẫu' : pend ? 'AI đang chấm…' : g ? 'Chấm lại' : 'Chấm bài') + '</button></div>' +
@@ -140,17 +150,15 @@ function noiOutHtml(s, i) {
   if (NOI_PEND[noiKey(s, i)]) return '<div class="small muted" style="margin-top:10px" id="aiStat">✨ AI đang chấm… Bạn có thể bấm › để làm câu khác, kết quả sẽ được lưu lại.</div>';
   if (s.fail && s.fail[i]) return '<div class="feedback bad" style="margin-top:10px">' + esc(s.fail[i]) + '<div style="margin-top:8px"><button class="btn primary" id="noiRetry">↻ Thử chấm lại</button></div></div>' +
     (q.mau ? '<div class="card" style="margin-top:8px"><b class="small">Trong lúc chờ, tham khảo câu trả lời mẫu</b>' + exHtml({ zh: q.mau, py: q.maupy || '', vi: q.mauvi || '' }) + '</div>' : '') + noiNavHtml(s, i);
-  if (g) return noiGradeHtml(g, s.ans[i] || '') + noiNavHtml(s, i);
+  if (g) return noiGradeHtml(g, s.ans[i] || '', { t: 'Luyện nói', w: q.w, p: q.q, ans: s.ans[i] || '' }) + noiNavHtml(s, i);
   if (s.seen && s.seen[i]) return '<div class="card" style="margin-top:10px"><b class="small">Câu trả lời mẫu</b>' + exHtml({ zh: q.mau, py: q.maupy, vi: q.mauvi }) +
     '<div class="small muted">So sánh với câu của bạn. Thêm khóa AI (Cài đặt → Khóa AI) để được chấm và sửa lỗi.</div></div>' + noiNavHtml(s, i);
   return '';
 }
-function noiGradeHtml(d, ans) {
+function noiGradeHtml(d, ans, ctx) {
   var sc = d.diem, loi = d.loi || [], sua = d.sua;
   return '<div class="feedback ' + (sc >= 7 ? 'good' : 'bad') + '" style="margin-top:10px"><span class="noi-score">' + sc + '/10</span> ' + esc(d.nhanxet || '') + '</div>' +
-    (loi.length ? '<div class="card" style="margin-top:8px"><b class="small">Lỗi cần sửa</b>' + loi.map(function (x) {
-      return '<div class="err-row small"><span class="zh">❌ ' + esc(x.sai || '') + '</span> → <span class="zh">✅ ' + esc(x.dung) + '</span>' + (x.giaithich ? '<div class="muted">' + esc(x.giaithich) + '</div>' : '') + '</div>';
-    }).join('') + '</div>' : '') +
+    loiListHtml(d.loi, ctx) +
     (sua && sua.zh && sua.zh !== ans ? '<div class="card" style="margin-top:8px"><b class="small">Câu của bạn sau khi sửa</b>' + exHtml({ zh: sua.zh, py: sua.py || '', vi: sua.vi || '' }) + '</div>' : '') +
     ((d.goiy || []).length ? '<div class="card" style="margin-top:8px"><b class="small">💡 Cách trả lời hay hơn</b>' + d.goiy.map(function (g) { return exHtml({ zh: g.zh, py: g.py || '', vi: g.vi || '' }); }).join('') + '</div>' : '');
 }
@@ -168,21 +176,20 @@ function noiCheck(s, i, ans) {
   var prompt = 'Bạn là giáo viên tiếng Trung chấm bài luyện nói của học viên người Việt. ' + CONTEXT + '\n' +
     'Cấp độ câu hỏi: ' + NOI_LV[s.lv].ten + ' – ' + NOI_LV[s.lv].ai + '.\nCâu hỏi: ' + q.q + (q.vi ? ' (' + q.vi + ')' : '') + '\n' +
     (o ? 'Từ cần luyện: ' + o.w + ' (' + o.py + '): ' + meaning(o) + '\n' : '') +
-    'Câu trả lời của học viên: ' + ans + '\n\n' +
-    'Lưu ý: câu trả lời có thể được chuyển từ giọng nói sang chữ nên có thể sai chữ đồng âm; nếu lỗi chỉ do chữ đồng âm thì nhắc nhẹ trong nhận xét, không trừ nhiều điểm. Nếu học viên trả lời bằng tiếng Việt hoặc pinyin, hãy chỉ cách nói bằng tiếng Trung.\n' +
-    'Chấm theo: trả lời đúng ý câu hỏi, đúng ngữ pháp, dùng từ đúng và tự nhiên, độ đầy đủ so với cấp độ.\n' +
-    'Trả về DUY NHẤT JSON: {"diem":0-10,"dungy":true/false,"nhanxet":"nhận xét ngắn, động viên, bằng tiếng Việt","loi":[{"sai":"phần sai trong câu học viên","dung":"cách sửa","giaithich":"giải thích ngắn bằng tiếng Việt"}],"sua":{"zh":"câu trả lời của học viên sau khi sửa, giữ ý của học viên","py":"pinyin","vi":"nghĩa"},"goiy":[{"zh":"cách trả lời tự nhiên hoặc hay hơn, đúng trình độ","py":"pinyin","vi":"nghĩa"}]}\n' +
+    'Câu trả lời của học viên: ' + ans + '\n\n' + gradeRules(!!(s.voice && s.voice[i])) +
+    'Chấm điểm theo: trả lời đúng ý câu hỏi, dùng từ đúng và tự nhiên, đúng ngữ pháp, độ đầy đủ so với cấp độ.\n' +
+    'Trả về DUY NHẤT JSON: {"diem":0-10,"dungy":true/false,"nhanxet":"nhận xét ngắn, động viên, bằng tiếng Việt",' + LOI_JSON + ',"sua":{"zh":"câu trả lời của học viên sau khi sửa, giữ ý của học viên","py":"pinyin","vi":"nghĩa"},"goiy":[{"zh":"cách trả lời tự nhiên hoặc hay hơn, đúng trình độ","py":"pinyin","vi":"nghĩa"}]}\n' +
     'loi để mảng rỗng nếu không có lỗi. goiy gồm 1–2 câu.';
   var here = function () { return NOI === s && s.i === i && $('noiOut'); };
   AI.fn.json(prompt, { modelTier: 'default' }).then(function (d) {
     delete NOI_PEND[k];
     var sc = Math.max(0, Math.min(10, Math.round(+d.diem || 0)));
-    var loi = (d.loi || []).filter(function (x) { return x && x.dung; });
+    var loi = loiClean(d.loi);
     var sua = d.sua && d.sua.zh ? { zh: d.sua.zh, py: d.sua.py || '', vi: d.sua.vi || '' } : null;
     s.grade[i] = { diem: sc, nhanxet: d.nhanxet || '', loi: loi, sua: sua, goiy: (d.goiy || []).filter(function (g) { return g && g.zh; }) };
     s.res[i] = sc;
-    if (q.w && (sc < 7 || loi.length)) errAdd(q.w, { t: 'Luyện nói', p: q.q, g: ans, a: sua ? sua.zh : (q.mau || ''), fix: 1, why: loi.length ? loi[0].giaithich || '' : d.nhanxet || '' });
-    else if (q.w && sc >= 8) errRight(q.w);
+    // Khong tu ghi so loi: hoc vien bam "+ So loi" o loi minh muon luu
+    if (q.w && sc >= 8 && !loi.length) errRight(q.w);
     histTouch(s);
     if (here()) noiRender(true); else { if (NOI === s && $('noiIn')) noiRender(true); toast('AI đã chấm xong câu ' + (i + 1) + ': ' + sc + '/10'); }
   }, function (e) {
@@ -197,7 +204,7 @@ function noiDone() {
   var pend = s.qs.filter(function (_, k) { return NOI_PEND[noiKey(s, k)]; }).length;
   openSheet('<div class="word-head"><div style="font-size:48px">' + (avg == null ? '🎤' : avg >= 8 ? '🎉' : avg >= 6 ? '👍' : '💪') + '</div><div class="big-msg">' + (avg == null ? 'Hoàn thành ' + s.qs.length + ' câu' : 'Điểm trung bình <b>' + avg + '/10</b>') + '</div>' +
     (pend ? '<div class="small muted">Còn ' + pend + ' câu AI đang chấm, kết quả sẽ tự lưu vào lịch sử.</div>' : '') +
-    (got.some(function (x) { return x < 7; }) ? '<div class="small muted">Các câu chưa tốt đã được ghi vào Sổ tay lỗi sai.</div>' : '') + '</div>' +
+    (got.some(function (x) { return x < 7; }) ? '<div class="small muted">Muốn ôn lại lỗi nào, mở câu đó và bấm “＋ Sổ lỗi”.</div>' : '') + '</div>' +
     '<div style="display:grid;gap:8px;margin-top:12px"><button class="btn block" id="noiReview">📋 Xem lại từng câu</button>' +
     NOI_LV.map(function (l, i) { return '<button class="btn block' + (i === s.lv ? ' primary' : '') + '" data-noilv="' + i + '" data-noiws="' + esc((s.ws || []).join(' ')) + '">Luyện tiếp cấp ' + l.ten + '</button>'; }).join('') + '<button class="btn block ghost" data-close>Đóng</button></div>');
   $('noiReview').onclick = function () { noiResume(s, 0); };
@@ -212,11 +219,12 @@ function noiRecStart() {
     $('noiRecMsg').innerHTML = 'Trình duyệt này chưa ghi âm thành chữ được. Hãy dùng <b>Chrome</b>, hoặc bấm biểu tượng 🎤 trên <b>bàn phím điện thoại</b> (chọn bàn phím tiếng Trung) để nói vào ô trả lời.';
     return;
   }
-  var box = $('noiIn'), base = box.value ? box.value.replace(/\s+$/, '') + ' ' : '';
+  var box = $('noiIn'), base = box.value ? box.value.replace(/\s+$/, '') + ' ' : '', vs = NOI, vi = NOI && NOI.i;
   noiSR = new SR(); noiSR.lang = 'zh-CN'; noiSR.interimResults = true; noiSR.continuous = true;
   noiSR.onresult = function (ev) {
     var t = ''; for (var i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript;
-    if ($('noiIn')) $('noiIn').value = base + t;
+    if (vs) { vs.voice = vs.voice || {}; vs.voice[vi] = 1; }
+    if ($('noiIn')) { $('noiIn').value = base + t; if (vs) vs.ans[vi] = base + t; }
   };
   noiSR.onerror = function (ev) {
     var m = ev.error === 'not-allowed' || ev.error === 'service-not-allowed' ? 'Trình duyệt chưa cho dùng micro. Bấm biểu tượng 🔒 cạnh địa chỉ trang → cho phép Micro, rồi thử lại.' :
@@ -230,3 +238,12 @@ function noiRecStart() {
 function noiRecStop() { if (noiSR && noiRecOn) { try { noiSR.stop(); } catch (e) { } } }
 var noiClose = closeSheet;
 closeSheet = function () { noiRecStop(); noiClose(); };
+
+// Goi y: y tra loi (tieng Viet) + cac tu nen dung (bam de nghe)
+function noiHintHtml(q) {
+  var tu = q.tu || [];
+  return '<div class="noi-hint card" hidden>' + (q.goiy ? '<div class="small">💡 ' + esc(q.goiy) + '</div>' : '') +
+    (tu.length ? '<div class="small muted" style="margin-top:6px">Từ nên dùng trong câu trả lời:</div><div class="noi-tu">' + tu.map(function (t) {
+      return '<button class="noi-tu-b" data-say="' + esc(t.zh) + '"><span class="zh">' + esc(t.zh) + '</span><span class="py">' + esc(t.py) + '</span><span class="small">' + esc(t.vi) + '</span></button>';
+    }).join('') + '</div>' : '') + '</div>';
+}

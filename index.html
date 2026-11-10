@@ -76,7 +76,7 @@
     ds.src = 'data/danh-sach.js?t=' + Date.now();
     ds.onload = function () {
       // Tai song song cac file du lieu nhung chay dung thu tu (async=false); file nao thieu thi bo qua
-      (window.HSK_FILES || []).concat(['app.js', 'app-tu.js', 'app-nhac.js', 'app-ai.js', 'app-chuyende.js', 'app-hoc.js', 'app-viet.js', 'app-thanhngu.js', 'app-dieuhuong.js', 'app-loisai.js', 'app-lichsu.js', 'app-luyennoi.js', 'app-taikhoan.js']).forEach(function (f) {
+      (window.HSK_FILES || []).concat(['app.js', 'app-tu.js', 'app-nhac.js', 'app-ai.js', 'app-chuyende.js', 'app-hoc.js', 'app-viet.js', 'app-thanhngu.js', 'app-dieuhuong.js', 'app-loisai.js', 'app-lichsu.js', 'app-luyennoi.js', 'app-taikhoan.js', 'app-themtu.js']).forEach(function (f) {
         var el = document.createElement('script');
         el.src = f + '?v=' + (window.HSK_VERSION || '1');
         el.async = false;

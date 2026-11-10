@@ -7,13 +7,13 @@ var ERR_FIX = 2; // dung lien tiep bao nhieu lan thi coi la da khac phuc
 function errS() { S.err = S.err || {}; return S.err; }
 function errActive() {
   var E = errS();
-  return Object.keys(E).filter(function (w) { return !E[w].fixed && BYW[w]; }).sort(function (a, b) { return E[b].last - E[a].last; });
+  return Object.keys(E).filter(function (w) { return !E[w].fixed && (BYW[w] || E[w].own); }).sort(function (a, b) { return E[b].last - E[a].last; });
 }
 function plain(html) { var d = document.createElement('div'); d.innerHTML = html || ''; d.querySelectorAll('button').forEach(function (b) { b.remove(); }); return d.textContent.replace(/\s+/g, ' ').trim(); }
 function errAdd(w, it) {
-  if (!w || !BYW[w]) return;
+  w = String(w || '').trim(); if (!w || (!BYW[w] && !it.own)) return;
   var E = errS(), e = E[w] || (E[w] = { n: 0, ok: 0, last: 0, items: [] });
-  e.n++; e.ok = 0; e.fixed = false; e.last = Date.now();
+  e.n++; e.ok = 0; e.fixed = false; e.last = Date.now(); if (it.own && !BYW[w]) e.own = 1;
   it.at = e.last; e.items.unshift(it); e.items = e.items.slice(0, 5);
   save();
 }
@@ -43,23 +43,27 @@ answered = function (ok, q) {
   else errAdd(q.w, { t: q.t, p: plain(q.p), g: errPick, a: q.a });
 };
 
+
 // ---------- The tren tab On tap ----------
 function errCardHtml() {
   var act = errActive(), E = errS(), fixed = Object.keys(E).filter(function (w) { return E[w].fixed; }).length;
   var h = '<div class="card err-card"><b>📕 Sổ tay lỗi sai</b>';
-  if (!act.length) return h + '<div class="small muted" style="margin-top:4px">' + (fixed ? '🎉 Bạn đã khắc phục hết ' + fixed + ' lỗi. ' : '') + 'Câu nào làm sai trong bài tập, bài AI hay luyện nói sẽ tự ghi vào đây để ôn lại.</div></div>';
-  return h + '<div class="small muted" style="margin:4px 0 10px"><b>' + act.length + '</b> từ đang hay sai' + (fixed ? ' · ' + fixed + ' từ đã khắc phục' : '') + '. Làm đúng ' + ERR_FIX + ' lần liên tiếp thì từ đó được tính là đã khắc phục.</div>' +
-    '<div class="err-chips">' + act.slice(0, 12).map(function (w) { return '<button class="chip" data-open="' + esc(w) + '">' + esc(w) + ' <span class="err-n">×' + E[w].n + '</span></button>'; }).join('') + '</div>' +
-    '<div style="display:grid;gap:8px;margin-top:10px"><button class="btn block" id="errList">📖 Xem chi tiết lỗi sai</button>' +
+  var add = '<button class="btn block" id="errNew">＋ Tự ghi lỗi sai của mình</button>';
+  if (!act.length) return h + '<div class="small muted" style="margin:4px 0 10px">' + (fixed ? '🎉 Bạn đã khắc phục hết ' + fixed + ' lỗi. ' : '') + 'Câu làm sai trong bài trắc nghiệm được tự ghi vào đây. Lỗi AI chỉ ra khi luyện nói, đặt câu: bấm “＋ Sổ lỗi” ở lỗi bạn muốn lưu. Bạn cũng có thể tự ghi lỗi gặp khi học.</div>' + add + '</div>';
+  return h + '<div class="small muted" style="margin:4px 0 10px"><b>' + act.length + '</b> lỗi cần ôn' + (fixed ? ' · ' + fixed + ' đã khắc phục' : '') + '. Làm đúng ' + ERR_FIX + ' lần liên tiếp thì từ đó được tính là đã khắc phục.</div>' +
+    '<div class="err-chips">' + act.slice(0, 12).map(function (w) { return '<button class="chip"' + (BYW[w] ? ' data-open="' + esc(w) + '"' : ' data-errlist="1"') + '>' + esc(w) + ' <span class="err-n">×' + E[w].n + '</span></button>'; }).join('') + '</div>' +
+    '<div style="display:grid;gap:8px;margin-top:10px"><button class="btn block" id="errList">📖 Xem chi tiết lỗi sai</button>' + add +
     '<button class="btn block" id="errQuiz">🔁 Luyện lại các từ hay sai</button>' +
     (aiReady() ? '<button class="btn block primary" id="errAi">✨ AI tạo bài tập mới từ lỗi sai</button>' : '<div class="small muted">Thêm AI (Cài đặt → Khóa AI) để AI soạn bài riêng nhắm vào đúng lỗi của bạn.</div>') + '</div></div>';
 }
 function bindErrCard() {
+  if ($('errNew')) $('errNew').onclick = function () { errForm(); };
   if (!$('errList')) return;
   $('errList').onclick = errListOpen;
-  $('errQuiz').onclick = function () { startQuiz(shuffle(errActive()).slice(0, 10), 'mix'); };
+  $('errQuiz').onclick = function () { var ws = errActive().filter(function (w) { return BYW[w]; }); if (!ws.length) return toast('Các lỗi tự ghi chưa có trong kho từ, hãy dùng nút AI tạo bài tập.'); startQuiz(shuffle(ws).slice(0, 10), 'mix'); };
   if ($('errAi')) $('errAi').onclick = aiErrQuiz;
 }
+document.addEventListener('click', function (e) { if (e.target.closest('[data-errlist]')) errListOpen(); });
 var errReview = VIEWS.review;
 VIEWS.review = function () {
   errReview();
@@ -68,6 +72,35 @@ VIEWS.review = function () {
   if (ai) ai.insertAdjacentHTML('beforebegin', errCardHtml()); else $('view-review').insertAdjacentHTML('beforeend', errCardHtml());
   bindErrCard();
 };
+function errRefresh() { if (document.querySelector('#view-review.active')) VIEWS.review(); }
+
+// ---------- Tu ghi loi sai ----------
+function errForm(pre) {
+  pre = pre || {};
+  openSheet('<h3 style="margin-top:4px">＋ Ghi lỗi sai của mình</h3><div class="small muted" style="margin-bottom:10px">Chỉ cần điền từ hay sai; các ô khác không bắt buộc.</div>' +
+    '<div class="err-form"><label class="small">Từ / cụm từ hay dùng sai<input id="efW" placeholder="Ví dụ: 急剧" value="' + esc(pre.w || '') + '"></label>' +
+    '<label class="small">Câu mình đã viết / nói sai<input id="efG" placeholder="Ví dụ: 我们要急剧讨论补救方案。" value="' + esc(pre.g || '') + '"></label>' +
+    '<label class="small">Câu đúng<input id="efA" placeholder="Ví dụ: 我们要积极讨论补救方案。" value="' + esc(pre.a || '') + '"></label>' +
+    '<label class="small">Vì sao sai / ghi chú cho mình<textarea id="efN" class="note" placeholder="Ví dụ: 急剧 chỉ dùng cho thay đổi nhanh (急剧增加); muốn nói “tích cực” dùng 积极.">' + esc(pre.why || '') + '</textarea></label></div>' +
+    '<div class="row" style="margin-top:10px"><button class="btn primary grow" id="efSave">Lưu vào sổ lỗi</button><button class="btn" data-close>Hủy</button></div>');
+  $('efSave').onclick = function () {
+    var w = $('efW').value.trim(); if (!w) return toast('Hãy nhập từ hay dùng sai.');
+    errAdd(w, { t: 'Tự ghi', p: '', g: $('efG').value.trim(), a: $('efA').value.trim(), why: $('efN').value.trim(), fix: 1, own: 1 });
+    closeSheet(); toast('Đã lưu vào Sổ tay lỗi sai.'); errRefresh();
+  };
+}
+// Nut "+ So loi" dat canh tung loi AI chi ra (hoc vien tu chon loi nao can luu)
+var ERR_PEND = {};
+function errBtn(w, it) {
+  var k = 'e' + Math.random().toString(36).slice(2, 8); ERR_PEND[k] = { w: w, it: it };
+  return '<button class="btn mini-btn" data-erradd="' + k + '">＋ Sổ lỗi</button>';
+}
+document.addEventListener('click', function (ev) {
+  var b = ev.target.closest('[data-erradd]'); if (!b) return;
+  var p = ERR_PEND[b.dataset.erradd]; if (!p) return;
+  p.it.own = 1; errAdd(p.w, p.it); delete ERR_PEND[b.dataset.erradd];
+  b.textContent = '✓ Đã lưu'; b.disabled = true; toast('Đã lưu “' + p.w + '” vào Sổ tay lỗi sai.');
+});
 
 function fmtAgo(ms) {
   var m = Math.round((Date.now() - ms) / 60000);
@@ -75,20 +108,22 @@ function fmtAgo(ms) {
 }
 function errListOpen() {
   var E = errS(), act = errActive();
-  var h = '<h3 style="margin-top:4px">📕 Sổ tay lỗi sai</h3><div class="small muted" style="margin-bottom:10px">Xếp theo lần sai gần nhất. Bấm vào chữ Hán để xem lại từ.</div>';
+  var h = '<h3 style="margin-top:4px">📕 Sổ tay lỗi sai</h3><div class="row" style="margin-bottom:10px"><span class="small muted grow">Xếp theo lần sai gần nhất. Bấm vào chữ Hán để xem lại từ.</span><button class="btn" id="errNew2">＋ Tự ghi lỗi</button></div>';
   h += act.map(function (w) {
     var o = BYW[w], e = E[w];
-    return '<div class="card err-item"><div class="row"><span class="grow"><button class="linkish zh" data-open="' + esc(w) + '" style="font-size:20px">' + esc(w) + '</button> <span class="py">' + esc(o.py) + '</span><div class="small">' + esc(meaning(o)) + '</div></span>' +
+    return '<div class="card err-item"><div class="row"><span class="grow">' + (o ? '<button class="linkish zh" data-open="' + esc(w) + '" style="font-size:20px">' + esc(w) + '</button> <span class="py">' + esc(o.py) + '</span><div class="small">' + esc(meaning(o)) + '</div>' :
+      '<span class="zh" style="font-size:20px">' + esc(w) + '</span><div class="small muted">Chưa có trong kho từ' + (typeof addWordOpen === 'function' && /[㐀-鿿]/.test(w) ? ' · <button class="linkish" data-addword="' + esc(w) + '">＋ Thêm vào kho từ</button>' : '') + '</div>') + '</span>' +
       '<span class="small muted" style="text-align:right">Sai ' + e.n + ' lần<br>' + fmtAgo(e.last) + '</span></div>' +
       e.items.slice(0, 3).map(function (it) {
         return '<div class="err-row small"><div class="muted">' + esc(it.t || '') + '</div>' + (it.p ? '<div>' + esc(it.p) + '</div>' : '') +
-          (it.g ? '<div>❌ Bạn trả lời: <span class="zh">' + esc(it.g) + '</span></div>' : '') + '<div>✅ ' + (it.fix ? 'Nên nói' : 'Đáp án') + ': <span class="zh">' + esc(it.a) + '</span></div>' + (it.why ? '<div class="muted">💡 ' + esc(it.why) + '</div>' : '') + '</div>';
+          (it.g ? '<div>❌ ' + (it.fix ? 'Câu sai' : 'Bạn trả lời') + ': <span class="zh">' + esc(it.g) + '</span></div>' : '') + (it.a ? '<div>✅ ' + (it.fix ? 'Nên nói' : 'Đáp án') + ': <span class="zh">' + esc(it.a) + '</span></div>' : '') + (it.why ? '<div class="muted" style="white-space:pre-line">💡 ' + esc(it.why) + '</div>' : '') + '</div>';
       }).join('') +
-      '<div class="row" style="margin-top:6px"><button class="btn" data-practice="' + esc(w) + '">Luyện từ này</button><button class="btn ghost" data-errdel="' + esc(w) + '">Đã hiểu, xóa khỏi sổ</button></div></div>';
+      '<div class="row" style="margin-top:6px">' + (o ? '<button class="btn" data-practice="' + esc(w) + '">Luyện từ này</button>' : '') + '<button class="btn ghost" data-errdel="' + esc(w) + '">Đã hiểu, xóa khỏi sổ</button></div></div>';
   }).join('') || '<div class="empty">Sổ lỗi đang trống.</div>';
   openSheet(h);
+  $('errNew2').onclick = function () { errForm(); };
   $('sheet').querySelectorAll('[data-errdel]').forEach(function (b) {
-    b.onclick = function () { var e = E[b.dataset.errdel]; if (e) { e.fixed = true; save(); } errListOpen(); if (document.querySelector('#view-review.active')) VIEWS.review(); };
+    b.onclick = function () { var e = E[b.dataset.errdel]; if (e) { e.fixed = true; save(); } errListOpen(); errRefresh(); };
   });
 }
 
@@ -96,7 +131,7 @@ function errListOpen() {
 function errContext(ws) {
   var E = errS();
   return ws.map(function (w) {
-    var o = BYW[w], e = E[w];
+    var o = BYW[w] || { py: '', vi: '(lỗi tự ghi)' }, e = E[w];
     return '- ' + w + ' (' + o.py + '): ' + meaning(o) + ' – sai ' + e.n + ' lần. ' + e.items.slice(0, 2).map(function (it) {
       return '[' + (it.t || '') + '] đề: "' + (it.p || '').slice(0, 80) + '"' + (it.g ? ', học viên trả lời "' + it.g + '"' : '') + ', đáp án "' + it.a + '"';
     }).join('; ');
@@ -106,7 +141,7 @@ function aiErrQuiz() {
   if (AI.busy) return;
   var ws = errActive().slice(0, 8); if (!ws.length) return toast('Sổ lỗi đang trống.');
   AI.busy = true; aiLoading('AI đang soạn bài nhắm vào lỗi sai của bạn…');
-  var os = ws.map(function (w) { return BYW[w]; });
+  var os = ws.map(function (w) { return BYW[w]; }).filter(Boolean);
   var prompt = 'Bạn là giáo viên tiếng Trung. ' + CONTEXT + '\nTrình độ: khoảng ' + lvHint(os) + '.\n' +
     'Dưới đây là các từ học viên hay làm sai và lỗi cụ thể của họ:\n' + errContext(ws) + '\n\n' +
     'Hãy soạn đúng 8 câu hỏi MỚI (không lặp lại đề cũ) nhắm đúng vào chỗ học viên nhầm: nếu họ nhầm hai từ với nhau thì cho phương án gây nhầm đó; nếu sai trật tự câu thì cho bài sắp xếp; nếu hiểu sai nghĩa thì cho bài chọn nghĩa trong ngữ cảnh. Mỗi từ ít nhất một câu. Dạng câu:\n' +

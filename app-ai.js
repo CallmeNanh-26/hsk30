@@ -389,15 +389,49 @@ function writeSetup(w) {
   $('wrNext').onclick = function () { var n = ws.filter(function (x) { return x !== o; }); writeSetup(n.length ? shuffle(n)[0].w : o.w); };
   $('wrGo').onclick = function () { var v = $('wrIn').value.trim(); if (v) writeCheck(o, v); };
 }
+// ---------- Quy tac cham chung (dat cau, luyen noi): soi ky cach dung tung tu ----------
+function gradeRules(voice) {
+  return 'Nguồn câu trả lời: ' + (voice ? 'học viên NÓI, app chuyển giọng nói thành chữ' : 'học viên tự GÕ bằng bàn phím') + '.\n' +
+    'Yêu cầu chấm:\n' +
+    '1. Phân tích kỹ cách dùng TỪNG từ học viên dùng: nghĩa, từ loại, kết hợp từ (搭配), sắc thái, có hợp ngữ cảnh không. Đây là phần quan trọng nhất.\n' +
+    '2. Khi một từ bị dùng sai, phải nói rõ: từ đó nghĩa là gì và thường dùng thế nào (kết hợp hay gặp + một câu ví dụ đúng), vì sao không hợp ở đây, và nên dùng từ nào thay.\n' +
+    '3. Không được mặc định lỗi là do nhận dạng giọng nói. ' + (voice ?
+      'Chỉ khi từ sai đồng âm hoặc gần âm với một từ hợp lý mới được nói thêm là có thể do giọng nói, nhưng vẫn phải coi đó là lỗi dùng từ (rất có thể học viên chưa biết cách dùng của từ đó), giải thích cách dùng của cả từ đã xuất hiện lẫn từ đúng, và vẫn trừ điểm.' :
+      'Câu này do học viên tự gõ nên tuyệt đối không quy lỗi cho giọng nói.') + '\n' +
+    '4. Kiểm tra cả ngữ pháp, trật tự từ, lượng từ, chữ viết.\n' +
+    '5. Nếu học viên trả lời bằng tiếng Việt hoặc pinyin, hãy chỉ cách nói bằng tiếng Trung.\n';
+}
+var LOI_JSON = '"loi":[{"loai":"dùng từ|ngữ pháp|trật tự từ|lượng từ|chữ viết|thiếu ý","tu":"từ bị dùng sai, viết đúng như học viên viết (chỉ với lỗi dùng từ)","sai":"phần sai trong câu học viên","dung":"cách sửa","giaithich":"giải thích ngắn bằng tiếng Việt vì sao sai","cachdung":"với lỗi dùng từ: nghĩa và cách dùng đúng của từ bị dùng sai, kèm 1 ví dụ dạng 中文 (pinyin) – nghĩa"}]';
+function loiClean(arr) {
+  return (arr || []).filter(function (x) { return x && x.dung; }).map(function (x) {
+    return { loai: x.loai || '', tu: x.tu || '', sai: x.sai || '', dung: x.dung, giaithich: x.giaithich || '', cachdung: x.cachdung || '' };
+  });
+}
+// Danh sach loi, moi loi co nut "+ So loi" de hoc vien tu chon luu
+function loiListHtml(loi, ctx) {
+  if (!loi || !loi.length) return '';
+  return '<div class="card" style="margin-top:8px"><b class="small">Lỗi cần sửa</b>' + loi.map(function (x) {
+    var w = x.tu || ctx.w || x.sai;
+    var it = { t: ctx.t, p: ctx.p || '', g: x.sai || ctx.ans || '', a: x.dung, why: [x.giaithich, x.cachdung ? (x.tu ? 'Cách dùng ' + x.tu + ': ' : '') + x.cachdung : ''].filter(Boolean).join('\n'), fix: 1 };
+    return '<div class="err-row small">' + (x.loai ? '<span class="loi-tag">' + esc(x.loai) + '</span> ' : '') +
+      '<span class="zh">❌ ' + esc(x.sai) + '</span> → <span class="zh">✅ ' + esc(x.dung) + '</span>' +
+      (x.giaithich ? '<div class="muted">' + esc(x.giaithich) + '</div>' : '') +
+      (x.cachdung ? '<div class="loi-cd">📘 ' + (x.tu ? '<b class="zh">' + esc(x.tu) + '</b>: ' : '') + esc(x.cachdung) + '</div>' : '') +
+      '<div style="margin-top:4px">' + (typeof errBtn === 'function' && w ? errBtn(w, it) : '') + '</div></div>';
+  }).join('') + '</div>';
+}
+
 function writeCheck(o, sent) {
   if (AI.busy) return;
-  AI.busy = true; $('wrGo').disabled = true; $('wrOut').innerHTML = '<div class="small muted" style="margin-top:10px">✨ AI đang chấm…</div>';
+  AI.busy = true; AI.note = ''; $('wrGo').disabled = true; $('wrOut').innerHTML = '<div class="small muted" style="margin-top:10px" id="aiStat">✨ AI đang chấm…</div>';
   var prompt = 'Bạn là giáo viên tiếng Trung, chấm câu của học viên người Việt. ' + CONTEXT + '\nTừ cần dùng: ' + o.w + ' (' + o.py + '): ' + meaning(o) + '\nCâu học viên viết: ' + sent + '\n\n' +
-    'Trả về DUY NHẤT JSON: {"diem":1-5,"dungtu":true/false (có dùng đúng từ cần dùng không),"nhanxet":"nhận xét ngắn bằng tiếng Việt, chỉ ra lỗi nếu có","sua":"câu đã sửa đúng (giống câu gốc nếu không có lỗi)","py":"pinyin của câu đã sửa","vi":"nghĩa tiếng Việt","goiy":"một câu khác tự nhiên hơn dùng từ này, kèm pinyin và nghĩa trong ngoặc"}';
+    gradeRules(false) +
+    'Trả về DUY NHẤT JSON: {"diem":1-5,"dungtu":true/false (có dùng đúng từ cần dùng không),"nhanxet":"nhận xét ngắn bằng tiếng Việt",' + LOI_JSON + ',"sua":"câu đã sửa đúng (giống câu gốc nếu không có lỗi)","py":"pinyin của câu đã sửa","vi":"nghĩa tiếng Việt","goiy":"một câu khác tự nhiên hơn dùng từ này, kèm pinyin và nghĩa trong ngoặc"}\nloi để mảng rỗng nếu không có lỗi.';
   AI.fn.json(prompt, { modelTier: 'default' }).then(function (d) {
     AI.busy = false; if (!$('wrOut')) return; $('wrGo').disabled = false;
     var sc = Math.max(1, Math.min(5, +d.diem || 1));
     $('wrOut').innerHTML = '<div class="feedback ' + (sc >= 4 ? 'good' : 'bad') + '" style="margin-top:10px"><b>' + '★★★★★'.slice(0, sc) + '☆☆☆☆☆'.slice(0, 5 - sc) + '</b> ' + esc(d.nhanxet || '') + '</div>' +
+      loiListHtml(loiClean(d.loi), { t: 'Tự đặt câu', w: o.w, ans: sent, p: 'Đặt câu với ' + o.w }) +
       (d.sua && d.sua !== sent ? '<div class="card" style="margin-top:8px">' + exHtml({ zh: d.sua, py: d.py || '', vi: d.vi || '' }) + '</div>' : '') +
       (d.goiy ? '<div class="small" style="margin-top:6px">💡 Gợi ý: <span class="zh">' + esc(d.goiy) + '</span></div>' : '');
   }, function (e) { AI.busy = false; if (!$('wrOut')) return; $('wrGo').disabled = false; $('wrOut').innerHTML = '<div class="feedback bad" style="margin-top:10px">' + esc(aiErr(e)) + '</div>'; });
